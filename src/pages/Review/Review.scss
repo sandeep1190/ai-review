@@ -42,6 +42,8 @@
           padding: 0.5rem;
           border: 1px solid #ccc;
           border-radius: 4px;
+          background: none;
+          color: #585E6A;
         }
     
         .filter-btn {
@@ -60,6 +62,7 @@
           border: none;
           padding: 14px 20px;
           display: inline-block;
+          cursor: pointer;
       }
     }
   
@@ -73,14 +76,13 @@
       overflow: hidden;
   
       th, td {
-        padding: 1rem;
+        padding: 28px 20px;
         text-align: left;
-        border-bottom: 1px solid #eee;
       }
   
       th {
-        background: #F4F7FCBF;
-        font-weight: 600;
+        background-color: rgba(244, 247, 252, 0.7490196078);
+        padding:10px 20px 30px;
       }
   
       td {
@@ -88,13 +90,23 @@
   
         svg {
           font-size: 1.2rem;
-          color: #2563eb;
+          color: #625E70;
           cursor: pointer;
         }
       }
   
       tr:hover {
         background-color: #f9fafb;
+      }
+
+      tbody {
+        tr {
+          background-color: #fff;
+
+          &:nth-child(even) {
+            background-color: #F9FAFC;
+          }
+        }
       }
     }
   }

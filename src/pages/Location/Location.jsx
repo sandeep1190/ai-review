@@ -35,56 +35,57 @@ const Location = () => {
         <div className="breadcrumb">Dashboard / Locations</div>
       </div>
 
-      <div className="location-controls">
-        <div className="search-box">
-          <FaSearch />
-          <input
-            type="text"
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(1);
-            }}
-          />
-          <button className="filter-btn"><FaFilter /></button>
+      <div className="review-section">
+        <div className="location-controls">
+
+            <div className="search-box">
+              <FaSearch />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+              <button className="filter-btn"><FaFilter /></button>
+            </div>
+            <button onClick={() => setShowModal(true)} className="sync-btn">
+              <FaSyncAlt /> Sync Locations
+            </button>
+         
         </div>
-
-        <button onClick={() => setShowModal(true)} className="sync-btn">
-          <FaSyncAlt /> Sync Locations
-        </button>
-      </div>
-
-      <div className="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th><input type="checkbox" /></th>
-              <th>#</th>
-              <th>Location Name</th>
-              <th>Location Primary Phone</th>
-              <th>Front Address</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedData.map((item, index) => (
-              <tr key={item.id}>
-                <td><input type="checkbox" /></td>
-                <td>{indexOfFirstReview + index + 1}</td>
-                <td>{item.name}</td>
-                <td>{item.phone}</td>
-                <td>{item.address}</td>
-                <td className="actions">
-                  <FaRegEnvelope />
-                  <FaCog />
-                </td>
+        <div className="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th><input type="checkbox" /></th>
+                <th>#</th>
+                <th>Location Name</th>
+                <th>Location Primary Phone</th>
+                <th>Front Address</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {paginatedData.map((item, index) => (
+                <tr key={item.id}>
+                  <td><input type="checkbox" /></td>
+                  <td>{indexOfFirstReview + index + 1}</td>
+                  <td>{item.name}</td>
+                  <td>{item.phone}</td>
+                  <td>{item.address}</td>
+                  <td className="actions">
+                    <FaRegEnvelope />
+                    <FaCog />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-
       <div className="pagination">
         <div className="page-info">
           {totalReviews === 0
