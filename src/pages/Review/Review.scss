@@ -1,0 +1,140 @@
+.review-page {
+  padding: 70px;
+  background: #fff;
+  
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+  
+      h2 {
+        font-size: 24px;
+        font-weight: bold;
+      }
+  
+      .sync-button {
+        background-color: #2563eb;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+    }
+
+    .review-section {
+        box-shadow: 0 0 9px #00000014;
+        border-radius: 10px;
+    }
+
+    .top-section{
+      background: rgba(244, 247, 252, 0.7490196078);
+      margin: 1rem 0 0;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+
+      .filters {
+        display: flex;
+        gap: 0.5rem;
+        
+        input[type="date"] {
+          padding: 0.5rem;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+        }
+    
+        .filter-btn {
+          padding: 0.5rem 1rem;
+          border: 1px solid #ccc;
+          background: #fff;
+          border-radius: 0;
+          cursor: pointer;
+        }
+      }
+
+      .sync-btn {
+          border-radius: 7px;
+          background: #2264E5;
+          color: #fff;
+          border: none;
+          padding: 14px 20px;
+          display: inline-block;
+      }
+    }
+  
+    
+  
+    .review-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+  
+      th, td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+      }
+  
+      th {
+        background: #F4F7FCBF;
+        font-weight: 600;
+      }
+  
+      td {
+        vertical-align: top;
+  
+        svg {
+          font-size: 1.2rem;
+          color: #2563eb;
+          cursor: pointer;
+        }
+      }
+  
+      tr:hover {
+        background-color: #f9fafb;
+      }
+    }
+  }
+  .pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    font-family: 'Inter', sans-serif;
+  
+    .page-info {
+      font-size: 14px;
+      color: #666;
+    }
+  
+    .page-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+  
+      select {
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-family: inherit;
+      }
+  
+      button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px 8px;
+        font-size: 16px;
+  
+        &:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+  
+  

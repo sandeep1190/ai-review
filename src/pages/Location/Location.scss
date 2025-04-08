@@ -1,0 +1,157 @@
+.location-page {
+  padding: 20px;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    h2 {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .breadcrumb {
+      font-size: 14px;
+      color: #888;
+      margin-top: 8px;
+    }
+  }
+
+  .location-controls {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0;
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 6px 10px;
+
+      input {
+        border: none;
+        outline: none;
+        padding: 6px;
+        width: 200px;
+      }
+
+      .filter-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+      }
+    }
+
+    .sync-btn {
+      background-color: #2563eb;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+
+      th, td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      th {
+        background-color: #f8f8f8;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        font-size: 18px;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .pagination {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    select {
+      padding: 4px 8px;
+    }
+
+    .page-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      button {
+        padding: 4px 10px;
+        background: #eee;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+
+        &:disabled {
+          cursor: not-allowed;
+          opacity: 0.6;
+        }
+      }
+    }
+  }
+}
+
+// Modal styles
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+
+  .modal {
+    background: #fff;
+    padding: 20px 30px;
+    border-radius: 12px;
+    width: 400px;
+    max-width: 90%;
+    text-align: center;
+
+    h3 {
+      margin-bottom: 10px;
+    }
+
+    p {
+      margin-bottom: 20px;
+    }
+
+    .close-btn {
+      background: #2563eb;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  }
+}
