@@ -1,152 +1,242 @@
 .review-page {
-  padding: 70px;
   background: #fff;
-  
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-  
-      h2 {
-        font-size: 24px;
-        font-weight: bold;
-      }
-  
-      .sync-button {
-        background-color: #2563eb;
-        color: white;
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        cursor: pointer;
-      }
-    }
 
-    .review-section {
-        box-shadow: 0 0 9px #00000014;
-        border-radius: 10px;
-    }
-
-    .top-section{
-      background: rgba(244, 247, 252, 0.7490196078);
-      margin: 1rem 0 0;
-      padding: 20px;
-      display: flex;
-      justify-content: space-between;
-
-      .filters {
-        display: flex;
-        gap: 0.5rem;
-        
-        input[type="date"] {
-          padding: 0.5rem;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          background: none;
-          color: #585E6A;
-        }
-    
-        .filter-btn {
-          padding: 0.5rem 1rem;
-          border: 1px solid #ccc;
-          background: #fff;
-          border-radius: 0;
-          cursor: pointer;
-        }
-      }
-
-      .sync-btn {
-          border-radius: 7px;
-          background: #2264E5;
-          color: #fff;
-          border: none;
-          padding: 14px 20px;
-          display: inline-block;
-          cursor: pointer;
-      }
-    }
-  
-    
-  
-    .review-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-  
-      th, td {
-        padding: 28px 20px;
-        text-align: left;
-      }
-  
-      th {
-        background-color: rgba(244, 247, 252, 0.7490196078);
-        padding:10px 20px 30px;
-      }
-  
-      td {
-        vertical-align: top;
-  
-        svg {
-          font-size: 1.2rem;
-          color: #625E70;
-          cursor: pointer;
-        }
-      }
-  
-      tr:hover {
-        background-color: #f9fafb;
-      }
-
-      tbody {
-        tr {
-          background-color: #fff;
-
-          &:nth-child(even) {
-            background-color: #F9FAFC;
-          }
-        }
-      }
-    }
-  }
-  .pagination {
+  .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 20px;
-    font-family: 'Inter', sans-serif;
-  
-    .page-info {
-      font-size: 14px;
-      color: #666;
+
+    h2 {
+      font-size: 24px;
+      font-weight: bold;
     }
-  
-    .page-controls {
+
+    .sync-button {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  }
+
+  .review-section {
+    box-shadow: 0 0 9px #00000014;
+    border-radius: 10px;
+  }
+
+  .top-section {
+    background: rgba(244, 247, 252, 0.7490196078);
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+
+    .filters {
       display: flex;
+      gap: 0.5rem;
       align-items: center;
-      gap: 10px;
-  
-      select {
-        padding: 4px 8px;
+
+      input[type="date"] {
+        padding: 0.5rem;
         border: 1px solid #ccc;
         border-radius: 4px;
-        font-family: inherit;
-      }
-  
-      button {
         background: none;
-        border: none;
+        color: #585E6A;
+      }
+
+      .filter-btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid #ccc;
+        background: #fff;
+        border-radius: 0;
         cursor: pointer;
-        padding: 4px 8px;
-        font-size: 16px;
-  
-        &:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
+      }
+    }
+
+    .sync-btn {
+      border-radius: 7px;
+      background: #2264E5;
+      color: #fff;
+      border: none;
+      padding: 14px 20px;
+      display: inline-block;
+      cursor: pointer;
+    }
+  }
+
+
+
+  .review-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+
+    th,
+    td {
+      padding: 28px 20px;
+      text-align: left;
+    }
+
+    th {
+      background-color: rgba(244, 247, 252, 0.7490196078);
+      padding: 10px 20px 30px;
+      background-color: rgba(244, 247, 252, 0.7490196078);
+      padding: 10px 20px 30px;
+      font-family: Inter;
+      font-weight: 600;
+      font-size: 14.02px;
+      line-height: 20.39px;
+      vertical-align: middle;
+      text-transform: uppercase;
+      color: #464F60;
+    }
+
+    td {
+      vertical-align: top;
+
+      svg {
+        font-size: 1.2rem;
+        color: #625E70;
+        cursor: pointer;
+      }
+    }
+
+    tr:hover {
+      background-color: #f9fafb;
+    }
+
+    tbody {
+      tr {
+        background-color: #fff;
+
+        &:nth-child(even) {
+          background-color: #F9FAFC;
         }
       }
     }
   }
-  
-  
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+  font-family: 'Inter', sans-serif;
+
+  .page-info {
+    font-size: 14px;
+    color: #666;
+  }
+
+  .page-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    select {
+      padding: 4px 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: inherit;
+    }
+
+    button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 8px;
+      font-size: 16px;
+
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+.review-page .top-section .filters span.p-calendar {
+  min-width: 120px;
+  width: 100%;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  padding: 8px 18px;
+  border: 1px solid #DCDFE3;
+  border-radius: 8px;
+}
+
+.review-page .top-section .filters span.p-calendar input.p-inputtext.p-component {
+  padding: 0px;
+  border: 0px;
+  background: transparent;
+  font-family: Inter;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  vertical-align: middle;
+  width: 90px;
+  max-width: 100% !important;
+}
+
+.review-page .top-section .filters button.p-datepicker-trigger {
+  background: transparent;
+  border: 0px;
+  color: #0D6EFD;
+  font-size: 15px;
+  height: fit-content;
+  width: fit-content;
+}
+
+.review-page .top-section .filters span.p-calendar input {
+  box-shadow: none;
+  border: none;
+  outline: none;
+}
+
+
+.sort-ftr span.reset-filters {
+  width: 111px;
+  height: 24px;
+  border-radius: 16px;
+  padding-top: 4px;
+  padding-right: 16px;
+  padding-bottom: 4px;
+  padding-left: 24px;
+  font-family: Inter;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0px;
+  text-align: center;
+  background: #FFFFFF;
+  cursor: pointer;
+}
+
+.sort-ftr {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.sort-ftr span.filter-icon {
+  padding: 10px 15px;
+  background: #FFFFFF;
+  box-shadow: 0px 0px 0px 1.27px #0000001A;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.action-btn {
+  display: flex
+;
+  align-items: center;
+  gap: 22px;
+}

@@ -1,15 +1,12 @@
 import React from "react";
 import './styles/global.scss';
-import { Routes, Route } from "react-router-dom";
-import Review from "./pages/Review/Review";
-import Location from "./pages/Location/Location";
+import Routing from "./Routes/Route";
+import "primereact/resources/themes/lara-light-cyan/theme.css";
+import "./App.css";
 
 const App = () => {
   return (
-    <Routes>
-      <Route path="/" element={<Review />} />
-      <Route path="/locations" element={<Location />} /> 
-    </Routes>
+    <Routing />
   );
 };
 

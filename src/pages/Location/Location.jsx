@@ -30,10 +30,10 @@ const Location = () => {
 
   return (
     <div className="location-page">
-      <div className="header">
+      {/* <div className="header">
         <h2>Locations</h2>
         <div className="breadcrumb">Dashboard / Locations</div>
-      </div>
+      </div> */}
 
       <div className="review-section">
         <div className="location-controls">
