@@ -62,7 +62,7 @@ const Location = () => {
               <tr>
                 <th><input type="checkbox" /></th>
                 <th>#</th>
-                <th>Location Name</th>
+                <th>Location Namee</th>
                 <th>Location Primary Phone</th>
                 <th>Front Address</th>
                 <th>Actions</th>
