@@ -86,7 +86,6 @@ const reviews = [
         comment: "Decent service, could improve follow-up.",
         postedAt: "5, February 2025"
     },
-    // Add more reviews to test pagination
 ];
 
 const Review = () => {
@@ -189,9 +188,6 @@ const Review = () => {
                     </tbody>
                 </table>
             </div>
-
-
-
             {/* Pagination */}
             <div className="pagination">
                 <div className="page-info">
