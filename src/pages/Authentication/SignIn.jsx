@@ -1,4 +1,5 @@
 import React from 'react';
+import GoogleIcon from '../../assets/Icons/GoogleIcon';
 
 const SignIn = () => {
     const handlePopup = () => {
@@ -16,8 +17,15 @@ const SignIn = () => {
 
     return (
         <div className='sign-in'>
-            <h2>Sign in</h2>
-            <button onClick={handlePopup}>Sign in with Google</button>
+            <div className='sign-in-container'>
+                <h2>Sign in</h2>
+                <div className="google-login-button" onClick={handlePopup}>
+                    <GoogleIcon />
+                    <span>Log in with Google</span>
+                </div>
+                {/* <button onClick={handlePopup}>Sign in with Google</button> */}
+            </div>
+
         </div>
     );
 };
