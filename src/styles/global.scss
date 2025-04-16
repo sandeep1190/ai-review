@@ -18,6 +18,23 @@ body {
   padding: 0px 20px;
 }
 
+header.header {
+  background: #0D6EFD;
+  margin: 0 0 30px;
+
+  .container {
+    justify-content: center;
+    display: flex;
+    align-items: center;
+
+    img {
+      width: 200px;
+    }
+  }
+
+
+}
+
 header {
   display: flex;
   justify-content: space-between;
