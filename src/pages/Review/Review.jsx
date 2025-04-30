@@ -7,8 +7,8 @@ import FilterIcon from "../../assets/Icons/FilterIcon";
 import ClipboardIcon from "../../assets/Icons/ClipboardIcon";
 import ReplyIcon from "../../assets/Icons/ShareIcon";
 import LocationModal from "../../components/LocationModal/LocationModal";
+import ReplyModal from "../../components/ReplyModal/ReplyModal"; // ← make sure this path is correct
 
-// Helper function to get numeric rating value
 const getNumericRating = (rating) => {
   const ratingMap = { ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5 };
   if (typeof rating === "string") {
@@ -18,7 +18,6 @@ const getNumericRating = (rating) => {
   return isNaN(numeric) ? 0 : Math.max(0, Math.min(5, Math.round(numeric)));
 };
 
-// Helper function to format the review date
 const formatReviewDate = (dateString) => {
   if (!dateString) return "N/A";
   const date = new Date(dateString);
@@ -27,37 +26,30 @@ const formatReviewDate = (dateString) => {
 
 const Review = () => {
   const { locationId } = useParams();
-  const ghlLocationId = "0OKk2AUg2zJwKTYNwnmf"; 
+  const ghlLocationId = "0OKk2AUg2zJwKTYNwnmf";
   const token = localStorage.getItem("review_token");
-  
+
   const { reviews, loading, error, fetchReviews, pagination } = useContext(ReviewContext);
 
-  const [showModal, setShowModal] = useState(false);
+  const [showSyncModal, setShowSyncModal] = useState(false);
+  const [showReplyModal, setShowReplyModal] = useState(false);
+  const [selectedReviewId, setSelectedReviewId] = useState(null);
+
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage] = useState(10);
+  const [reviewsPerPage] = useState(10); // Set reviews per page to 10
 
-  useEffect(() => {
-    if (locationId && ghlLocationId) {
-      if (process.env.NODE_ENV === "development") {
-        console.log("Location ID from URL:", locationId);
-        console.log("GHL Location ID:", ghlLocationId);
-        console.log("Fetched Token:", token);
-      }
-
-      if (token) {
-        console.log("Fetching reviews...");
-        fetchReviews();
-      }
-    }
-  }, [locationId, currentPage, rowsPerPage]);
-
-  // Reset filters function
   const handleResetFilters = () => {
     setStartDate(null);
     setEndDate(null);
   };
+
+  useEffect(() => {
+    if (locationId && ghlLocationId && token) {
+      fetchReviews();
+    }
+  }, [locationId, currentPage]);
 
   const filteredReviews = reviews?.filter((rev) => {
     const reviewDate = new Date(rev?.review_added_on);
@@ -66,9 +58,19 @@ const Review = () => {
     return start && end;
   }) || [];
 
-  const totalPages = Math.ceil(filteredReviews.length / rowsPerPage) || 1;
-  const startIdx = (currentPage - 1) * rowsPerPage;
-  const pageSlice = filteredReviews.slice(startIdx, startIdx + rowsPerPage);
+  const handleReplyClick = (reviewId) => {
+    setSelectedReviewId(reviewId);
+    setShowReplyModal(true);
+  };
+
+  // Pagination logic
+  const indexOfLastReview = currentPage * reviewsPerPage;
+  const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
+  const currentReviews = filteredReviews.slice(indexOfFirstReview, indexOfLastReview);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   return (
     <div className="review-page">
@@ -76,42 +78,16 @@ const Review = () => {
         <div className="top-section">
           <div className="sort-ftr">
             <div className="filters">
-              <Calendar
-                value={startDate}
-                onChange={(e) => setStartDate(e.value)}
-                placeholder="Start Date"
-                dateFormat="yy-mm-dd"
-                showIcon
-              />
+              <Calendar value={startDate} onChange={(e) => setStartDate(e.value)} placeholder="Start Date" dateFormat="yy-mm-dd" showIcon />
               <span>–</span>
-              <Calendar
-                value={endDate}
-                onChange={(e) => setEndDate(e.value)}
-                placeholder="End Date"
-                dateFormat="yy-mm-dd"
-                showIcon
-              />
+              <Calendar value={endDate} onChange={(e) => setEndDate(e.value)} placeholder="End Date" dateFormat="yy-mm-dd" showIcon />
             </div>
-            <span className="filter-icon">
-              <FilterIcon />
-            </span>
-            <span className="reset-filters" onClick={handleResetFilters}>
-              Reset Filters
-            </span>
+            <span className="filter-icon"><FilterIcon /></span>
+            <span className="reset-filters" onClick={handleResetFilters}>Reset Filters</span>
           </div>
-
-          <button
-            onClick={() => {
-              console.log("Sync Locations button clicked!");
-              setShowModal(true);
-            }}
-            className="sync-btn"
-          >
-            Sync Locations
-          </button>
+          <button onClick={() => setShowSyncModal(true)} className="sync-btn">Sync Locations</button>
         </div>
 
-        {/* Show loading, error, or reviews table */}
         {loading ? (
           <p>Loading reviews...</p>
         ) : error ? (
@@ -130,15 +106,11 @@ const Review = () => {
               </tr>
             </thead>
             <tbody>
-              {pageSlice.length > 0 ? (
-                pageSlice.map((rev, i) => (
+              {currentReviews.length > 0 ? (
+                currentReviews.map((rev, i) => (
                   <tr key={i}>
                     <td>{rev?.reviewer?.displayName || "Anonymous"}</td>
-                    <td>
-                      {[...Array(getNumericRating(rev?.rating))].map((_, i) => (
-                        <span key={i}>⭐</span>
-                      ))}
-                    </td>
+                    <td>{[...Array(getNumericRating(rev?.rating))].map((_, i) => <span key={i}>⭐</span>)}</td>
                     <td>{rev?.comments || "No comment"}</td>
                     <td>{formatReviewDate(rev?.review_added_on)}</td>
                     <td>{rev?.reply || "No reply"}</td>
@@ -146,16 +118,16 @@ const Review = () => {
                     <td>
                       <div className="action-btn">
                         <ClipboardIcon />
-                        <ReplyIcon />
+                        <span onClick={() => handleReplyClick(rev?.id)} style={{ cursor: "pointer" }}>
+                          <ReplyIcon />
+                        </span>
                       </div>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" style={{ textAlign: "center" }}>
-                    No reviews available
-                  </td>
+                  <td colSpan="7" style={{ textAlign: "center" }}>No reviews available</td>
                 </tr>
               )}
             </tbody>
@@ -163,25 +135,30 @@ const Review = () => {
         )}
       </div>
 
-      {/* Pagination section */}
       <div className="pagination">
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+        <button 
+          onClick={() => handlePageChange(Math.max(currentPage - 1, 1))} 
           disabled={currentPage === 1}
         >
           ◀
         </button>
-        <span>{`Page ${currentPage} of ${totalPages}`}</span>
-        <button
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-          disabled={currentPage === totalPages}
+        <span>{`Page ${currentPage} of ${Math.ceil(filteredReviews.length / reviewsPerPage)}`}</span>
+        <button 
+          onClick={() => handlePageChange(Math.min(currentPage + 1, Math.ceil(filteredReviews.length / reviewsPerPage)))} 
+          disabled={currentPage === Math.ceil(filteredReviews.length / reviewsPerPage)}
         >
           ▶
         </button>
       </div>
 
-      {/* Modal for syncing locations */}
-      <LocationModal isOpen={showModal} onClose={() => setShowModal(false)} />
+      <LocationModal isOpen={showSyncModal} onClose={() => setShowSyncModal(false)} />
+      {showReplyModal && selectedReviewId && (
+        <ReplyModal
+          reviewId={selectedReviewId}
+          isOpen={showReplyModal}
+          onClose={() => setShowReplyModal(false)}
+        />
+      )}
     </div>
   );
 };
