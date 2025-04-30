@@ -1,5 +1,5 @@
-// Review.jsx
-import React, { useState, useContext } from "react";
+import React, { useContext, useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { ReviewContext } from "../../APIContext/ReviewContext";
 import "./Review.scss";
 import { Calendar } from "primereact/calendar";
@@ -8,194 +8,182 @@ import ClipboardIcon from "../../assets/Icons/ClipboardIcon";
 import ReplyIcon from "../../assets/Icons/ShareIcon";
 import LocationModal from "../../components/LocationModal/LocationModal";
 
+// Helper function to get numeric rating value
 const getNumericRating = (rating) => {
-    const ratingMap = {
-        ONE: 1,
-        TWO: 2,
-        THREE: 3,
-        FOUR: 4,
-        FIVE: 5,
-    };
+  const ratingMap = { ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5 };
+  if (typeof rating === "string") {
+    return ratingMap[rating.toUpperCase()] || 0;
+  }
+  const numeric = parseFloat(rating);
+  return isNaN(numeric) ? 0 : Math.max(0, Math.min(5, Math.round(numeric)));
+};
 
-    if (typeof rating === "string") {
-        return ratingMap[rating.toUpperCase()] || 0;
-    }
-
-    // fallback if rating is already numeric
-    const numeric = parseFloat(rating);
-    return isNaN(numeric) ? 0 : Math.max(0, Math.min(5, Math.round(numeric)));
+// Helper function to format the review date
+const formatReviewDate = (dateString) => {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  return `${date.getDate()}, ${date.toLocaleString("en-US", { month: "long" })} ${date.getFullYear()}`;
 };
 
 const Review = () => {
-    const { reviews, loading } = useContext(ReviewContext);
+  const { locationId } = useParams();
+  const ghlLocationId = "0OKk2AUg2zJwKTYNwnmf"; 
+  const token = localStorage.getItem("review_token");
+  
+  const { reviews, loading, error, fetchReviews, pagination } = useContext(ReviewContext);
 
-    const [showModal, setShowModal] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [startDate, setStartDate] = useState(null);
-    const [endDate, setEndDate] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage] = useState(10);
 
-    const totalReviews = Array.isArray(reviews) ? reviews.length : 0;
-    const indexOfLastReview = currentPage * rowsPerPage;
-    const indexOfFirstReview = indexOfLastReview - rowsPerPage;
-    const currentReviews = reviews.slice(indexOfFirstReview, indexOfLastReview);
+  useEffect(() => {
+    if (locationId && ghlLocationId) {
+      if (process.env.NODE_ENV === "development") {
+        console.log("Location ID from URL:", locationId);
+        console.log("GHL Location ID:", ghlLocationId);
+        console.log("Fetched Token:", token);
+      }
 
-    const totalPages = Math.ceil(totalReviews / rowsPerPage);
+      if (token) {
+        console.log("Fetching reviews...");
+        fetchReviews();
+      }
+    }
+  }, [locationId, currentPage, rowsPerPage]);
 
-    const handleResetFilters = () => {
-        setStartDate(null);
-        setEndDate(null);
-        setCurrentPage(1);
-    };
+  // Reset filters function
+  const handleResetFilters = () => {
+    setStartDate(null);
+    setEndDate(null);
+  };
 
-    const formatReviewDate = (dateString) => {
-        if (!dateString) return "N/A";
-      
-        const date = new Date(dateString);
-      
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = date.toLocaleString("en-US", { month: "long" });
-        const year = date.getFullYear();
-      
-        return `${day}, ${month} ${year}`;
-      };
+  const filteredReviews = reviews?.filter((rev) => {
+    const reviewDate = new Date(rev?.review_added_on);
+    const start = startDate ? reviewDate >= new Date(startDate) : true;
+    const end = endDate ? reviewDate <= new Date(endDate) : true;
+    return start && end;
+  }) || [];
 
-    return (
-        <div className="review-page">
-            <div className="review-section">
-                <div className="top-section">
-                    <div className="sort-ftr">
-                        <div className="filters">
-                            <Calendar
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.value)}
-                                placeholder="Start Date"
-                                dateFormat="yy-mm-dd"
-                                showIcon
-                            />
-                            <span>–</span>
-                            <Calendar
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.value)}
-                                placeholder="End Date"
-                                dateFormat="yy-mm-dd"
-                                showIcon
-                            />
-                        </div>
-                        <span className="filter-icon">
-                            <FilterIcon />
-                        </span>
-                        <span className="reset-filters" onClick={handleResetFilters}>
-                            Reset Filters
-                        </span>
-                    </div>
-                    <button onClick={() => setShowModal(true)} className="sync-btn">
-                        Sync Locations
-                    </button>
-                </div>
+  const totalPages = Math.ceil(filteredReviews.length / rowsPerPage) || 1;
+  const startIdx = (currentPage - 1) * rowsPerPage;
+  const pageSlice = filteredReviews.slice(startIdx, startIdx + rowsPerPage);
 
-                {loading ? (
-                    <p>Loading reviews...</p>
-                ) : (
-                    <table className="review-table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Rating</th>
-                                <th>Comments</th>
-                                <th>Posted At</th>
-                                <th>Reply</th>
-                                <th>Posted On</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {currentReviews.length > 0 ? (
-                                currentReviews.map((rev, i) => (
-                                    <tr key={i}>
-                                        <td style={{ width: 190, fontWeight: 500 }}>
-                                            {rev?.reviewer?.displayName || "Anonymous"}
-                                        </td>
-                                        <td>
-                                            {[...Array(getNumericRating(rev?.rating))].map((_, i) => (
-                                                <span key={i}>⭐</span>
-                                            ))}
-                                        </td>
-                                        <td style={{ width: 350 }}>{rev?.comments || "No comment"}</td>
-                                        <td>{formatReviewDate(rev?.created_at || rev?.review_added_on)}</td>
-
-                                        <td></td>
-                                        <td></td>
-                                        <td>
-                                            <div className="action-btn">
-                                                <span>
-                                                    <ClipboardIcon />
-                                                </span>
-                                                <span>
-                                                    <ReplyIcon />
-                                                </span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan={7} style={{ textAlign: "center" }}>
-                                        No reviews available
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                )}
+  return (
+    <div className="review-page">
+      <div className="review-section">
+        <div className="top-section">
+          <div className="sort-ftr">
+            <div className="filters">
+              <Calendar
+                value={startDate}
+                onChange={(e) => setStartDate(e.value)}
+                placeholder="Start Date"
+                dateFormat="yy-mm-dd"
+                showIcon
+              />
+              <span>–</span>
+              <Calendar
+                value={endDate}
+                onChange={(e) => setEndDate(e.value)}
+                placeholder="End Date"
+                dateFormat="yy-mm-dd"
+                showIcon
+              />
             </div>
+            <span className="filter-icon">
+              <FilterIcon />
+            </span>
+            <span className="reset-filters" onClick={handleResetFilters}>
+              Reset Filters
+            </span>
+          </div>
 
-            {/* Pagination */}
-            <div className="pagination">
-                <div className="page-info">
-                    {totalReviews > 0 ? (
-                        <>
-                            {indexOfFirstReview + 1}–{Math.min(indexOfLastReview, totalReviews)} of {totalReviews}
-                        </>
-                    ) : (
-                        "0 reviews"
-                    )}
-                </div>
-                <div className="page-controls">
-                    <label>Rows per page:</label>
-                    <select
-                        value={rowsPerPage}
-                        onChange={(e) => {
-                            setRowsPerPage(Number(e.target.value));
-                            setCurrentPage(1);
-                        }}
-                    >
-                        <option value={5}>5</option>
-                        <option value={10}>10</option>
-                        <option value={25}>25</option>
-                    </select>
-
-                    <button
-                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                    >
-                        ◀
-                    </button>
-                    <span>
-                        {currentPage}/{totalPages || 1}
-                    </span>
-                    <button
-                        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages || totalPages === 0}
-                    >
-                        ▶
-                    </button>
-                </div>
-            </div>
-
-            <LocationModal isOpen={showModal} onClose={() => setShowModal(false)} />
+          <button
+            onClick={() => {
+              console.log("Sync Locations button clicked!");
+              setShowModal(true);
+            }}
+            className="sync-btn"
+          >
+            Sync Locations
+          </button>
         </div>
-    );
+
+        {/* Show loading, error, or reviews table */}
+        {loading ? (
+          <p>Loading reviews...</p>
+        ) : error ? (
+          <p style={{ color: "red" }}>{error}</p>
+        ) : (
+          <table className="review-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Rating</th>
+                <th>Comments</th>
+                <th>Posted At</th>
+                <th>Reply</th>
+                <th>Posted On</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pageSlice.length > 0 ? (
+                pageSlice.map((rev, i) => (
+                  <tr key={i}>
+                    <td>{rev?.reviewer?.displayName || "Anonymous"}</td>
+                    <td>
+                      {[...Array(getNumericRating(rev?.rating))].map((_, i) => (
+                        <span key={i}>⭐</span>
+                      ))}
+                    </td>
+                    <td>{rev?.comments || "No comment"}</td>
+                    <td>{formatReviewDate(rev?.review_added_on)}</td>
+                    <td>{rev?.reply || "No reply"}</td>
+                    <td>{formatReviewDate(rev?.review_added_on)}</td>
+                    <td>
+                      <div className="action-btn">
+                        <ClipboardIcon />
+                        <ReplyIcon />
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" style={{ textAlign: "center" }}>
+                    No reviews available
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Pagination section */}
+      <div className="pagination">
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+        >
+          ◀
+        </button>
+        <span>{`Page ${currentPage} of ${totalPages}`}</span>
+        <button
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+        >
+          ▶
+        </button>
+      </div>
+
+      {/* Modal for syncing locations */}
+      <LocationModal isOpen={showModal} onClose={() => setShowModal(false)} />
+    </div>
+  );
 };
 
 export default Review;

@@ -11,7 +11,7 @@ const Dashboard = () => {
     const locationId = searchParams.get("locationId");
 
     if (code && locationId) {
-      axios.post("http://54.147.18.26/api/callback/", {
+      axios.post("https://aireview.lawfirmgrowthmachine.com/api/callback/", {
         code,
         locationId,
       })

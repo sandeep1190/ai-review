@@ -1,25 +1,44 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./Location.scss";
 import { FaSearch, FaFilter, FaSyncAlt, FaCog, FaRegEnvelope } from "react-icons/fa";
 import LocationModal from "../../components/LocationModal/LocationModal";
+import axios from "axios";
+import { Link } from "react-router-dom";
 
-// Dummy data
-const dummyData = Array.from({ length: 97 }, (_, i) => ({
-  id: i + 1,
-  name: `Person ${i + 1}`,
-  phone: "5684236526",
-  address: "303 West Broad Street #202"
-}));
+const locationId = "0OKk2AUg2zJwKTYNwnmf";
 
 const Location = () => {
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [locations, setLocations] = useState([]);
+  const [token, setToken] = useState("");
 
-  // Filtered data
-  const filteredData = dummyData.filter(item =>
-    item.name.toLowerCase().includes(search.toLowerCase())
+  const fetchTokenAndData = async () => {
+    try {
+      const tokenResponse = await axios.post("https://aireview.lawfirmgrowthmachine.com/api/token/", {
+        locationId,
+      });
+      const accessToken = tokenResponse.data.access;
+      setToken(accessToken);
+
+      const dataResponse = await axios.get("https://aireview.lawfirmgrowthmachine.com/api/locations/", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      setLocations(dataResponse.data);
+    } catch (error) {
+      console.error("Error fetching location data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTokenAndData();
+  }, []);
+
+  const filteredData = locations.filter(item =>
+    item.name?.toLowerCase().includes(search.toLowerCase())
   );
 
   const totalReviews = filteredData.length;
@@ -30,54 +49,55 @@ const Location = () => {
 
   return (
     <div className="location-page">
-      {/* <div className="header">
-        <h2>Locations</h2>
-        <div className="breadcrumb">Dashboard / Locations</div>
-      </div> */}
-
       <div className="review-section">
         <div className="location-controls">
-
-            <div className="search-box">
-              <FaSearch />
-              <input
-                type="text"
-                placeholder="Search..."
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setCurrentPage(1);
-                }}
-              />
-              <button className="filter-btn"><FaFilter /></button>
-            </div>
-            <button onClick={() => setShowModal(true)} className="sync-btn">
-              <FaSyncAlt /> Sync Locations
-            </button>
-         
+          <div className="search-box">
+            <FaSearch />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
+            <button className="filter-btn"><FaFilter /></button>
+          </div>
+          <button onClick={() => setShowModal(true)} className="sync-btn">
+            <FaSyncAlt /> Sync Locations
+          </button>
         </div>
+
         <div className="table-wrapper">
           <table>
             <thead>
               <tr>
                 <th><input type="checkbox" /></th>
                 <th>#</th>
-                <th>Location Namee</th>
-                <th>Location Primary Phone</th>
+                <th>Location Name</th>
+                <th>Primary Phone</th>
                 <th>Front Address</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {paginatedData.map((item, index) => (
+                 console.log("Location item:", item),
                 <tr key={item.id}>
                   <td><input type="checkbox" /></td>
                   <td>{indexOfFirstReview + index + 1}</td>
-                  <td>{item.name}</td>
-                  <td>{item.phone}</td>
-                  <td>{item.address}</td>
+                  <td>{item.name || "—"}</td>
+                  <td>{item.phone_numbers?.primaryPhone || "—"}</td>
+                  <td>
+                    {item.front_address
+                      ? `${item.front_address?.addressLines?.join(", ")}, ${item.front_address?.locality}, ${item.front_address?.regionCode} ${item.front_address?.postalCode}`
+                      : "—"}
+                  </td>
                   <td className="actions">
-                    <FaRegEnvelope />
+                  <Link to={`/reviews/locations/${item.location_id?.split("/")[1]}`}>
+                <FaRegEnvelope />
+                </Link>
                     <FaCog />
                   </td>
                 </tr>
@@ -86,6 +106,7 @@ const Location = () => {
           </table>
         </div>
       </div>
+
       <div className="pagination">
         <div className="page-info">
           {totalReviews === 0
@@ -122,7 +143,12 @@ const Location = () => {
         </div>
       </div>
 
-      <LocationModal isOpen={showModal} onClose={() => setShowModal(false)} />
+      <LocationModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        token={token}
+        reloadLocations={fetchTokenAndData}
+      />
     </div>
   );
 };

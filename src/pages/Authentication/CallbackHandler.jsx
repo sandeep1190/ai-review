@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../APIContext/AuthContext';
 
-const BASE_URL = 'http://54.147.18.26/api';
+const BASE_URL = 'https://aireview.lawfirmgrowthmachine.com/api';
 const locationId = '0OKk2AUg2zJwKTYNwnmf';
 
 const CallbackHandler = () => {

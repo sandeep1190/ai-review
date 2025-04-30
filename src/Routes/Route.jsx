@@ -13,7 +13,7 @@ const Routing = () => {
             <Route path="/" element={<SignIn />} />
             <Route element={<Layout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/reviews" element={<Review />} />
+                <Route path="/reviews/locations/:locationId" element={<Review />} />
                 <Route path="/callback" element={<CallbackHandler />} />
                 <Route path="/locations" element={<Location />} />
             </Route>

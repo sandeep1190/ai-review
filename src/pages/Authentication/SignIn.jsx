@@ -9,7 +9,7 @@ const SignIn = () => {
         const top = (window.innerHeight - height) / 2;
 
         window.open(
-            'http://54.147.18.26/api/login',
+            'https://aireview.lawfirmgrowthmachine.com/api/login',
             'GoogleSignIn',
             `width=${width},height=${height},top=${top},left=${left}`
         );
