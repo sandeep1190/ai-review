@@ -83,7 +83,7 @@ const Location = () => {
             </thead>
             <tbody>
               {paginatedData.map((item, index) => (
-                 console.log("Location item:", item),
+                console.log("Location item:", item),
                 <tr key={item.id}>
                   <td><input type="checkbox" /></td>
                   <td>{indexOfFirstReview + index + 1}</td>
@@ -95,10 +95,12 @@ const Location = () => {
                       : "—"}
                   </td>
                   <td className="actions">
-                  <Link to={`/reviews/locations/${item.location_id?.split("/")[1]}`}>
-                <FaRegEnvelope />
-                </Link>
-                    <FaCog />
+                    <Link to={`/reviews/locations/${item.location_id?.split("/")[1]}`}>
+                      <FaRegEnvelope />
+                    </Link>
+                    <Link to={`/settings/locations/${item.location_id?.split("/")[1]}`}>
+                      <FaCog />
+                    </Link>
                   </td>
                 </tr>
               ))}

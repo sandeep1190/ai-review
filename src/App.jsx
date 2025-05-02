@@ -7,21 +7,23 @@ import Header from './components/Header';
 import { ReviewProvider } from "../src/APIContext/ReviewContext";
 import { AuthProvider } from '../src/APIContext/AuthContext';
 import { LocationProvider } from './APIContext/LocationContext';
+import { TemplateProvider } from './APIContext/TemplateContext'; 
 import { useParams } from 'react-router-dom';
-
-
 
 const App = () => {
 
-  const { locationId } = useParams();
+  const { locationId } = useParams();  
+
   return (
     <AuthProvider>
-     <ReviewProvider locationId={locationId}>
-      <LocationProvider>
-        <Header />
-        <Routing />
-        </LocationProvider>
-      </ReviewProvider>
+      <TemplateProvider> {/* Wrap the app with TemplateProvider */}
+        <ReviewProvider locationId={locationId}>
+          <LocationProvider>
+            <Header />
+            <Routing />
+          </LocationProvider>
+        </ReviewProvider>
+      </TemplateProvider>
     </AuthProvider>
   );
 };
