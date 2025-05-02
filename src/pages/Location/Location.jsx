@@ -5,7 +5,7 @@ import LocationModal from "../../components/LocationModal/LocationModal";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
-const GhllocationId = "0OKk2AUg2zJwKTYNwnmf";
+const locationId = "0OKk2AUg2zJwKTYNwnmf";
 
 const Location = () => {
   const [showModal, setShowModal] = useState(false);
@@ -18,7 +18,7 @@ const Location = () => {
   const fetchTokenAndData = async () => {
     try {
       const tokenResponse = await axios.post("https://aireview.lawfirmgrowthmachine.com/api/token/", {
-        GhllocationId,
+        locationId,
       });
       const accessToken = tokenResponse.data.access;
       setToken(accessToken);
