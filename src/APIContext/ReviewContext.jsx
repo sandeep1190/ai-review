@@ -63,31 +63,32 @@ export const ReviewProvider = ({ children }) => {
   };
   
 
-  // Helper function to fetch a new token
   const fetchNewToken = async () => {
     try {
-      const tokenRes = await fetch("https://aireview.lawfirmgrowthmachine.com/api/token/", {
+      const response = await fetch("https://aireview.lawfirmgrowthmachine.com/api/token/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ locationId }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ location_id: locationId }), 
       });
-
-      if (!tokenRes.ok) {
-        const errorText = await tokenRes.text();
+  
+      if (!response.ok) {
+        const errorText = await response.text();
         console.error("Error fetching new token:", errorText);
-        throw new Error(`Failed to fetch token: ${tokenRes.status} - ${errorText}`);
+        throw new Error(`Failed to fetch token: ${response.status} - ${errorText}`);
       }
-
-      const tokenData = await tokenRes.json();
-      const accessToken = tokenData.access;
-      console.log("Fetched new token:", accessToken); // Log the new token
-      localStorage.setItem("review_token", accessToken); // Save token to localStorage
-      return accessToken;
+  
+      const tokenData = await response.json();
+      localStorage.setItem("review_token", tokenData.access);
+      return tokenData.access;
     } catch (error) {
       console.error("Error fetching new token:", error.message);
-      throw new Error(`Error fetching new token: ${error.message}`);
+      throw error;
     }
   };
+
+  console.log("Refreshing token for location ID:", locationId);
 
   useEffect(() => {
     fetchReviews(); // Call fetchReviews when component mounts
