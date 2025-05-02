@@ -12,83 +12,102 @@ export const ReviewProvider = ({ children }) => {
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      setError(null);
-  
+      setError(null); // Reset error before fetching
+
       let access = localStorage.getItem("review_token");
-  
-      // Function to make the API call
-      const makeRequest = async (token) => {
-        return await fetch(`https://aireview.lawfirmgrowthmachine.com/api/reviews/locations/${locationId}/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        });
-      };
-  
-      let reviewRes = await makeRequest(access);
-  
-      // If token is expired or invalid (401), fetch a new token and retry once
-      if (reviewRes.status === 401) {
-        console.warn("Token expired or invalid. Refreshing...");
-  
-        access = await fetchNewToken(); // Refresh token
-        reviewRes = await makeRequest(access); // Retry request with new token
-  
-        if (!reviewRes.ok) {
-          const retryErrorText = await reviewRes.text();
-          throw new Error(`Retry failed: ${reviewRes.status} - ${retryErrorText}`);
-        }
+
+      if (!access) {
+        console.log("No token found, fetching a new one...");
+        access = await fetchNewToken(); // Fetch a new token if none exists
       }
-  
-      // Handle non-OK response
+
+      console.log("Using token:", access); // Log the token being used
+
+      // Try fetching the reviews with the current token
+      const reviewRes = await fetch(`https://aireview.lawfirmgrowthmachine.com/api/reviews/locations/${locationId}/`, {
+        headers: {
+          Authorization: `Bearer ${access}`,
+          Accept: "application/json",
+        },
+      });
+
       if (!reviewRes.ok) {
         const errorText = await reviewRes.text();
-        throw new Error(`Request failed: ${reviewRes.status} - ${errorText}`);
+        console.error("Error fetching reviews:", errorText); // Log the error response
+
+        if (reviewRes.status === 401) {
+          console.log("Token expired or invalid, fetching a new token...");
+          access = await fetchNewToken(); // Fetch a new token if expired/invalid
+
+          // Retry fetching the reviews with the new token
+          const retryRes = await fetch(`https://aireview.lawfirmgrowthmachine.com/api/reviews/locations/${locationId}/`, {
+            headers: {
+              Authorization: `Bearer ${access}`,
+            },
+          });
+
+          const retryErrorText = await retryRes.text();
+          if (!retryRes.ok) {
+            console.error("Error after retry:", retryErrorText);
+            throw new Error(`Error ${retryRes.status}: ${retryErrorText}`);
+          }
+
+          const retryData = await retryRes.json();
+          setReviews(retryData?.data || []);
+          setPagination(retryData?.pagination || {});
+          return;
+        }
+
+        throw new Error(`Error ${reviewRes.status}: ${errorText}`);
       }
-  
-      // Parse and set data
+
       const data = await reviewRes.json();
+      console.log("Reviews fetched successfully:", data); // Log data received
+
+      // **FIX** ← if data is an array, use it directly
       const reviewsArray = Array.isArray(data) ? data : data?.data || [];
-      const pageInfo = data?.pagination || data?.meta || {};
-  
-      setReviews(reviewsArray);
-      setPagination(pageInfo);
+      setReviews(reviewsArray); // Set reviews correctly
+
+      // pagination: if the API gave you a meta/pagination chunk
+      const pageInfo =
+        data?.pagination ||
+        (typeof data === "object" && !Array.isArray(data) && data.meta) ||
+        {};
+      setPagination(pageInfo); // Set pagination correctly
+
     } catch (err) {
       console.error("Fetch error:", err.message);
-      setError("Failed to fetch reviews.");
+      setError("Failed to fetch reviews."); // Set error state
     } finally {
-      setLoading(false);
+      setLoading(false); // End loading state
     }
   };
-  
 
+  // Helper function to fetch a new token
   const fetchNewToken = async () => {
     try {
-      const response = await fetch("https://aireview.lawfirmgrowthmachine.com/api/token/", {
+      const tokenRes = await fetch("https://aireview.lawfirmgrowthmachine.com/api/token/", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ location_id: locationId }), 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locationId }),
       });
-  
-      if (!response.ok) {
-        const errorText = await response.text();
+
+      if (!tokenRes.ok) {
+        const errorText = await tokenRes.text();
         console.error("Error fetching new token:", errorText);
-        throw new Error(`Failed to fetch token: ${response.status} - ${errorText}`);
+        throw new Error(`Failed to fetch token: ${tokenRes.status} - ${errorText}`);
       }
-  
-      const tokenData = await response.json();
-      localStorage.setItem("review_token", tokenData.access);
-      return tokenData.access;
+
+      const tokenData = await tokenRes.json();
+      const accessToken = tokenData.access;
+      console.log("Fetched new token:", accessToken); // Log the new token
+      localStorage.setItem("review_token", accessToken); // Save token to localStorage
+      return accessToken;
     } catch (error) {
       console.error("Error fetching new token:", error.message);
-      throw error;
+      throw new Error(`Error fetching new token: ${error.message}`);
     }
   };
-
-  console.log("Refreshing token for location ID:", locationId);
 
   useEffect(() => {
     fetchReviews(); // Call fetchReviews when component mounts
