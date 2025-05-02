@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import { useTemplate } from "../../APIContext/TemplateContext";
+import { useTemplate } from '../../APIContext/TemplateContext';
+import { useSettings } from '../../APIContext/SettingsContext';
 import './Settings.scss';
 
 const Settings = () => {
   const { locationId } = useParams();
+  const { settings, fetchSettings, updateSettings, loading } = useSettings();
+  const { setSelectedTemplateUrl } = useTemplate();
+
   const [formData, setFormData] = useState({
     facebook_url: '',
     twitter_url: '',
@@ -17,75 +20,49 @@ const Settings = () => {
     template3_url: '',
     template4_url: ''
   });
-  const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem('review_token');
-
-  const { setSelectedTemplateUrl } = useTemplate();
 
   useEffect(() => {
-    const fetchSettings = async () => {
-      if (!token) return;
-      try {
-        const res = await axios.get(
-          `https://aireview.lawfirmgrowthmachine.com/api/settings/locations/${locationId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setFormData(res.data);
-
-        // Detect and set selected template URL from the key name
-        const defaultTemplateKey = res.data.default_template?.toLowerCase().includes('template')
-          ? res.data.default_template?.toLowerCase() + '_url'
-          : '';
-        if (defaultTemplateKey && res.data[defaultTemplateKey]) {
-          setSelectedTemplateUrl(res.data[defaultTemplateKey]);
-        }
-      } catch (err) {
-        console.error('Error fetching settings:', err);
-      } finally {
-        setLoading(false);
+    const loadSettings = async () => {
+      const data = await fetchSettings(locationId);
+      if (data) {
+        setFormData(data);
+        const key = data.default_template?.toLowerCase();
+        const url = data[`${key}_url`];
+        if (url) setSelectedTemplateUrl(url);
       }
     };
-
-    fetchSettings();
-  }, [locationId, token, setSelectedTemplateUrl]);
+    loadSettings();
+  }, [locationId, fetchSettings, setSelectedTemplateUrl]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((f) => ({ ...f, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!token) return alert('No auth token');
-  
-    // Determine which template was selected (e.g., "Template3")
-    const selectedTemplateName = formData.default_template;
-  
-    // Get its corresponding URL
-    const selectedTemplateKey = selectedTemplateName?.toLowerCase() + '_url';
-    const selectedTemplateUrl = formData[selectedTemplateKey];
-  
-    const updatedFormData = {
+
+    const selectedTemplate = formData.default_template?.toLowerCase();
+    const selectedTemplateUrl = formData[`${selectedTemplate}_url`];
+
+    if (!selectedTemplateUrl) {
+      alert('Please ensure the selected template has a valid URL.');
+      return;
+    }
+
+    const updatedData = {
       ...formData,
       default_template: selectedTemplateUrl
     };
-  
-    try {
-      const res = await axios.post(
-        `https://aireview.lawfirmgrowthmachine.com/api/settings/locations/${locationId}`,
-        updatedFormData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-  
+
+    const success = await updateSettings(locationId, updatedData);
+    if (success) {
       setSelectedTemplateUrl(selectedTemplateUrl);
       alert('Settings updated successfully!');
-      console.log('Updated data sent:', updatedFormData);
-    } catch (err) {
-      alert('Failed to update settings');
-      console.error(err);
+    } else {
+      alert('Failed to update settings.');
     }
   };
-  
 
   if (loading) return <p>Loading settings…</p>;
 
@@ -116,7 +93,10 @@ const Settings = () => {
                     type="radio"
                     name="default_template"
                     value={`Template${num}`}
-                    checked={formData.default_template === `Template${num}` || formData.default_template === formData[`template${num}_url`]}
+                    checked={
+                      formData.default_template === `Template${num}` ||
+                      formData.default_template === formData[`template${num}_url`]
+                    }
                     onChange={handleChange}
                   />
                   <img
