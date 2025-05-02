@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import { useTemplate } from "../../APIContext/TemplateContext"; 
+import { useTemplate } from "../../APIContext/TemplateContext";
 import './Settings.scss';
 
 const Settings = () => {
@@ -20,7 +20,7 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem('review_token');
 
-  const { setSelectedTemplateUrl } = useTemplate(); // Access the context to set the selected template URL
+  const { setSelectedTemplateUrl } = useTemplate();
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -31,15 +31,21 @@ const Settings = () => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setFormData(res.data);
-        // Set the default template URL to the selected template in the context
-        const defaultTemplateKey = res.data.default_template?.toLowerCase() + '_url';
-        setSelectedTemplateUrl(res.data[defaultTemplateKey]);
+
+        // Detect and set selected template URL from the key name
+        const defaultTemplateKey = res.data.default_template?.toLowerCase().includes('template')
+          ? res.data.default_template?.toLowerCase() + '_url'
+          : '';
+        if (defaultTemplateKey && res.data[defaultTemplateKey]) {
+          setSelectedTemplateUrl(res.data[defaultTemplateKey]);
+        }
       } catch (err) {
         console.error('Error fetching settings:', err);
       } finally {
         setLoading(false);
       }
     };
+
     fetchSettings();
   }, [locationId, token, setSelectedTemplateUrl]);
 
@@ -51,21 +57,35 @@ const Settings = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!token) return alert('No auth token');
+  
+    // Determine which template was selected (e.g., "Template3")
+    const selectedTemplateName = formData.default_template;
+  
+    // Get its corresponding URL
+    const selectedTemplateKey = selectedTemplateName?.toLowerCase() + '_url';
+    const selectedTemplateUrl = formData[selectedTemplateKey];
+  
+    const updatedFormData = {
+      ...formData,
+      default_template: selectedTemplateUrl
+    };
+  
     try {
-      await axios.post(
+      const res = await axios.post(
         `https://aireview.lawfirmgrowthmachine.com/api/settings/locations/${locationId}`,
-        formData,
+        updatedFormData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Update the selected template URL after form submission
-      const updatedTemplateKey = formData.default_template?.toLowerCase() + '_url';
-      setSelectedTemplateUrl(formData[updatedTemplateKey]);
+  
+      setSelectedTemplateUrl(selectedTemplateUrl);
       alert('Settings updated successfully!');
+      console.log('Updated data sent:', updatedFormData);
     } catch (err) {
       alert('Failed to update settings');
       console.error(err);
     }
   };
+  
 
   if (loading) return <p>Loading settings…</p>;
 
@@ -96,7 +116,7 @@ const Settings = () => {
                     type="radio"
                     name="default_template"
                     value={`Template${num}`}
-                    checked={formData.default_template === `Template${num}`}
+                    checked={formData.default_template === `Template${num}` || formData.default_template === formData[`template${num}_url`]}
                     onChange={handleChange}
                   />
                   <img
@@ -120,6 +140,7 @@ const Settings = () => {
                     name={`template${num}_url`}
                     value={formData[`template${num}_url`] ?? ''}
                     onChange={handleChange}
+                    placeholder={`Template ${num} URL`}
                   />
                 </div>
               ))}
