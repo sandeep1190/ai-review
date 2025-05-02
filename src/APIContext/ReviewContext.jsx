@@ -7,7 +7,7 @@ export const ReviewProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({});
-  const locationId = "0OKk2AUg2zJwKTYNwnmf"; 
+  const locationId = "17431257306289895747"; 
 
   const fetchReviews = async () => {
     try {
