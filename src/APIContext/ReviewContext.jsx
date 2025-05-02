@@ -12,76 +12,56 @@ export const ReviewProvider = ({ children }) => {
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      setError(null); // Reset error before fetching
-
+      setError(null);
+  
       let access = localStorage.getItem("review_token");
-
-      if (!access) {
-        console.log("No token found, fetching a new one...");
-        access = await fetchNewToken(); // Fetch a new token if none exists
+  
+      // Function to make the API call
+      const makeRequest = async (token) => {
+        return await fetch(`https://aireview.lawfirmgrowthmachine.com/api/reviews/locations/${locationId}/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
+      };
+  
+      let reviewRes = await makeRequest(access);
+  
+      // If token is expired or invalid (401), fetch a new token and retry once
+      if (reviewRes.status === 401) {
+        console.warn("Token expired or invalid. Refreshing...");
+  
+        access = await fetchNewToken(); // Refresh token
+        reviewRes = await makeRequest(access); // Retry request with new token
+  
+        if (!reviewRes.ok) {
+          const retryErrorText = await reviewRes.text();
+          throw new Error(`Retry failed: ${reviewRes.status} - ${retryErrorText}`);
+        }
       }
-
-      console.log("Using token:", access); // Log the token being used
-
-      // Try fetching the reviews with the current token
-      const reviewRes = await fetch(`https://aireview.lawfirmgrowthmachine.com/api/reviews/locations/${locationId}/`, {
-        headers: {
-          Authorization: `Bearer ${access}`,
-          Accept: "application/json",
-        },
-      });
-
+  
+      // Handle non-OK response
       if (!reviewRes.ok) {
         const errorText = await reviewRes.text();
-        console.error("Error fetching reviews:", errorText); // Log the error response
-
-        if (reviewRes.status === 401) {
-          console.log("Token expired or invalid, fetching a new token...");
-          access = await fetchNewToken(); // Fetch a new token if expired/invalid
-
-          // Retry fetching the reviews with the new token
-          const retryRes = await fetch(`https://aireview.lawfirmgrowthmachine.com/api/reviews/locations/${locationId}/`, {
-            headers: {
-              Authorization: `Bearer ${access}`,
-            },
-          });
-
-          const retryErrorText = await retryRes.text();
-          if (!retryRes.ok) {
-            console.error("Error after retry:", retryErrorText);
-            throw new Error(`Error ${retryRes.status}: ${retryErrorText}`);
-          }
-
-          const retryData = await retryRes.json();
-          setReviews(retryData?.data || []);
-          setPagination(retryData?.pagination || {});
-          return;
-        }
-
-        throw new Error(`Error ${reviewRes.status}: ${errorText}`);
+        throw new Error(`Request failed: ${reviewRes.status} - ${errorText}`);
       }
-
+  
+      // Parse and set data
       const data = await reviewRes.json();
-      console.log("Reviews fetched successfully:", data); // Log data received
-
-      // **FIX** ← if data is an array, use it directly
       const reviewsArray = Array.isArray(data) ? data : data?.data || [];
-      setReviews(reviewsArray); // Set reviews correctly
-
-      // pagination: if the API gave you a meta/pagination chunk
-      const pageInfo =
-        data?.pagination ||
-        (typeof data === "object" && !Array.isArray(data) && data.meta) ||
-        {};
-      setPagination(pageInfo); // Set pagination correctly
-
+      const pageInfo = data?.pagination || data?.meta || {};
+  
+      setReviews(reviewsArray);
+      setPagination(pageInfo);
     } catch (err) {
       console.error("Fetch error:", err.message);
-      setError("Failed to fetch reviews."); // Set error state
+      setError("Failed to fetch reviews.");
     } finally {
-      setLoading(false); // End loading state
+      setLoading(false);
     }
   };
+  
 
   // Helper function to fetch a new token
   const fetchNewToken = async () => {
