@@ -21,7 +21,7 @@ const ReviewProviderWrapper = ({ children }) => {
 const Routing = () => {
   return (
     <Routes>
-      <Route path="/" element={<SignIn />} />
+      <Route path="/sign-in" element={<SignIn />} />
 
       <Route path="/settings/locations/:locationId" element={<Settings />} />
 
@@ -38,7 +38,7 @@ const Routing = () => {
         />
 
         <Route path="/callback" element={<CallbackHandler />} />
-        <Route path="/locations" element={<Location />} />
+        <Route path="/" element={<Location />} />
       </Route>
     </Routes>
   );
