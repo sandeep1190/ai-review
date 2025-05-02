@@ -9,6 +9,7 @@ import ClipboardIcon from "../../assets/Icons/ClipboardIcon";
 import ReplyIcon from "../../assets/Icons/ShareIcon";
 import LocationModal from "../../components/LocationModal/LocationModal";
 import ReplyModal from "../../components/ReplyModal/ReplyModal";
+import { useSettings } from '../../APIContext/SettingsContext';
 
 const getNumericRating = (rating) => {
   const map = { ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5 };
@@ -27,14 +28,15 @@ const Review = () => {
   const { locationId } = useParams();
   const token = localStorage.getItem("review_token");
   const { reviews, loading, error, fetchReviews } = useContext(ReviewContext);
-  const { selectedTemplateUrl } = useTemplate(); 
+  const { selectedTemplateUrl } = useTemplate();
+  const { settings, fetchSettings } = useSettings();
 
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [showReplyModal, setShowReplyModal] = useState(false);
   const [selectedReviewId, setSelectedReviewId] = useState(null);
 
   const [showImageModal, setShowImageModal] = useState(false);
-  const [imageUrl, setImageUrl] = useState("");
+  const [templateImageUrl, setTemplateImageUrl] = useState("");
 
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -44,6 +46,7 @@ const Review = () => {
   useEffect(() => {
     if (locationId && token) {
       fetchReviews(locationId, token, currentPage, reviewsPerPage);
+      fetchSettings(locationId, token);
     }
   }, [locationId, token, currentPage]);
 
@@ -64,19 +67,11 @@ const Review = () => {
     setShowReplyModal(true);
   };
 
-  const openImageModal = (rev) => {
-    const name = encodeURIComponent(rev.reviewer?.displayName || "Anonymous");
-    const text = encodeURIComponent(rev.comments || "No comment");
-  
-    const demo = `https://img1.niftyimages.com/51ph/0995/m_dp?name=${name}&review=${text}`;
-    const sep = selectedTemplateUrl?.includes("?") ? "&" : "?";
-
-    const final = selectedTemplateUrl
-      ? `${selectedTemplateUrl}${sep}name=${name}&review=${text}`
-      : demo;
-  
-    setImageUrl(final);
-    setShowImageModal(true);
+  const openImageModal = () => {
+    if (settings?.default_template) {
+      setTemplateImageUrl(settings.default_template);
+      setShowImageModal(true);
+    }
   };
 
   return (
@@ -146,7 +141,7 @@ const Review = () => {
                     <td>
                       <div className="action-btn">
                         <span
-                          onClick={() => openImageModal(rev)}
+                          onClick={openImageModal}
                           style={{ cursor: "pointer" }}
                         >
                           <ClipboardIcon />
@@ -191,7 +186,7 @@ const Review = () => {
             onChange={e => setCurrentPage(Number(e.target.value))}
           >
             {[...Array(totalPages)].map((_, i) => (
-              <option key={i+1} value={i+1}>Page {i+1}</option>
+              <option key={i + 1} value={i + 1}>Page {i + 1}</option>
             ))}
           </select>
         </div>
@@ -211,8 +206,8 @@ const Review = () => {
         <div className="image-modal-overlay" onClick={() => setShowImageModal(false)}>
           <div className="image-modal" onClick={e => e.stopPropagation()}>
             <img
-              src={imageUrl}
-              alt="Review Template"
+              src={templateImageUrl}
+              alt="Default Template"
               style={{ maxWidth: "100%", height: "auto" }}
             />
             <button className="close-btn" onClick={() => setShowImageModal(false)}>×</button>
