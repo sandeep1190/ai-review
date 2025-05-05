@@ -62,11 +62,11 @@ const Review = () => {
     console.log('Posting to platform:', platform); // Log platform value to console
     setPosting(true); // Set posting state to true when posting
     setMessage(''); // Clear previous message
-  
+
     try {
       // Attempt to post the review
       await postReview({ value: platform, reviewId, token });
-  
+
       // If posting is successful, update the status in postedPlatforms
       setPostedPlatforms((prev) => ({
         ...prev,
@@ -117,39 +117,17 @@ const Review = () => {
   };
 
   const openImageModal = (review) => {
+    setSelectedReviewId(review.review_id); // Ensure the selectedReviewId is set
     if (settings?.default_template) {
-      // Encoding the name and review to safely include them in the URL
       const encodedName = encodeURIComponent(review.reviewer?.displayName || "Anonymous");
       const encodedReview = encodeURIComponent(review.comments || "No comment");
-
-      // Construct the dynamic image URL
       const dynamicUrl = `${settings.default_template}?name=${encodedName}&review=${encodedReview}`;
-      
       setTemplateImageUrl(dynamicUrl);
-      setShowImageModal(true);
+      setShowImageModal(true); // Show the modal
     }
   };
 
-  // Function to handle social media sharing
-  const handleSocialShare = async (socialMedia, reviewId) => {
-    try {
-      const response = await axios.post(
-        `https://aireview.lawfirmgrowthmachine.com/api/post-review/`,
-        {
-          value: socialMedia,
-          reviewId: reviewId
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-      console.log(`${socialMedia} shared successfully:`, response.data);
-    } catch (error) {
-      console.error("Error sharing on social media:", error);
-    }
-  };
+
 
   return (
     <div className="review-page">
@@ -215,7 +193,7 @@ const Review = () => {
                     <td>{formatDate(rev.review_added_on)}</td>
                     <td>{rev.ai_generated_response || ""}</td>
                     <td>
-                    {(postedPlatforms[rev.review_id] && Object.keys(postedPlatforms[rev.review_id]).length > 0) ? (
+                      {(postedPlatforms[rev.review_id] && Object.keys(postedPlatforms[rev.review_id]).length > 0) ? (
                         Object.keys(postedPlatforms[rev.review_id]).map((platform) => {
                           const platformIcon = socialPlatforms.find((p) => p.name === platform)?.icon;
                           return platformIcon ? (
@@ -258,6 +236,17 @@ const Review = () => {
         )}
       </div>
 
+      {showImageModal && (
+        <div className="image-modal">
+          <div className="modal-content">
+            <span className="close-btn" onClick={() => setShowImageModal(false)}>
+              &times;
+            </span>
+            <img src={templateImageUrl} alt="Review Image" />
+          </div>
+        </div>
+      )}
+
       <div className="pagination">
         <div className="pagination-left">
           <span>Page {currentPage} of {totalPages}</span>
@@ -276,7 +265,9 @@ const Review = () => {
             onChange={e => setCurrentPage(Number(e.target.value))}
           >
             {[...Array(totalPages)].map((_, i) => (
-              <option key={i + 1} value={i + 1}>Page {i + 1}</option>
+              <option key={i} value={i + 1}>
+                {i + 1}
+              </option>
             ))}
           </select>
         </div>
