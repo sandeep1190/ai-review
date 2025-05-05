@@ -177,12 +177,12 @@ const Review = () => {
           <table className="review-table">
             <thead>
               <tr>
-                <th>Name</th>
+                <th className="nameformat">Name</th>
                 <th>Rating</th>
                 <th>Comments</th>
-                <th>Posted At</th>
+                <th className="dateformte">Posted At</th>
                 <th>AI Reply</th>
-                <th>Posted On</th>
+                <th className="dateformte">Posted On</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -190,16 +190,16 @@ const Review = () => {
               {currentReviews.length ? (
                 currentReviews.map((rev) => (
                   <tr key={rev.review_id}>
-                    <td>{rev.reviewer?.displayName || "Anonymous"}</td>
+                    <td  className="nameformat">{rev.reviewer?.displayName || "Anonymous"}</td>
                     <td>
                       {[...Array(getNumericRating(rev.rating))].map((_, i) => (
                         <span key={i}>⭐</span>
                       ))}
                     </td>
                     <td>{rev.comments || "No comment"}</td>
-                    <td>{formatDate(rev.review_added_on)}</td>
+                    <td className="dateformte">{formatDate(rev.review_added_on)}</td>
                     <td>{rev.ai_generated_response || ""}</td>
-                    <td>
+                    <td className="dateformte">
                       {(postedPlatforms[rev.review_id] && Object.keys(postedPlatforms[rev.review_id]).length > 0) ? (
                         Object.keys(postedPlatforms[rev.review_id]).map((platform) => {
                           const platformIcon = socialPlatforms.find((p) => p.name === platform)?.icon;
