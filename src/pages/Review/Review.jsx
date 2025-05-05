@@ -37,7 +37,7 @@ const formatDate = (s) => {
 
 const Review = () => {
   const { locationId } = useParams();
-  const { postReview } = useSocialMedia();
+  const { postToSocialMedia } = useSocialMedia();
   const token = localStorage.getItem("review_token");
   const { reviews, loading, error, fetchReviews } = useContext(ReviewContext);
   const { selectedTemplateUrl } = useTemplate();
@@ -59,38 +59,47 @@ const Review = () => {
   const platforms = ['facebook', 'twitter', 'google', 'instagram'];
 
   const handlePost = async (platform, reviewId) => {
-    console.log('Posting to platform:', platform); // Log platform value to console
-    setPosting(true); // Set posting state to true when posting
-    setMessage(''); // Clear previous message
-
+    console.log('Posting to platform:', platform);
+    console.log('Review ID:', reviewId);
+    console.log('Token:', token); // Caution: avoid logging tokens in production
+    setPosting(true);
+    setMessage('');
+  
     try {
+      // Log the exact payload being sent to backend
+      console.log('Sending payload to backend:', {
+        value: platform,
+        reviewId,
+        token,
+      });
+  
       // Attempt to post the review
-      await postReview({ value: platform, reviewId, token });
-
-      // If posting is successful, update the status in postedPlatforms
+      await postToSocialMedia(token, reviewId, platform);
+  
       setPostedPlatforms((prev) => ({
         ...prev,
         [reviewId]: {
           ...prev[reviewId],
-          [platform]: true, // Mark this platform as successfully posted
+          [platform]: true,
         },
       }));
       setMessage(`Posted successfully on ${platform}`);
     } catch (error) {
-      // If posting fails, update the status in postedPlatforms as false
+      console.error('Error posting review:', error);
       setPostedPlatforms((prev) => ({
         ...prev,
         [reviewId]: {
           ...prev[reviewId],
-          [platform]: false, // Mark this platform as failed
+          [platform]: false,
         },
       }));
       setMessage(`Failed to post on ${platform}`);
     } finally {
-      setPosting(false); // Reset posting state
-      setShowImageModal(false); // Close the modal after posting
+      setPosting(false);
+      setShowImageModal(false);
     }
   };
+  
 
   useEffect(() => {
     if (locationId && token) {
