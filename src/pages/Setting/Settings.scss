@@ -8,37 +8,44 @@
   background: #fff;
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 
-    h2 {
-        margin: 0 0 20px;
-    }
+  h2 {
+    margin: 0 0 20px;
+  }
 }
 
-.settings-form .form-group {
+.settings-form {
+  .form-group {
     margin-bottom: 1.5rem;
     display: flex;
     align-items: center;
-}
+    flex-wrap: wrap;
+  }
 
-.settings-form label {
+  label {
     margin-bottom: 0.5rem;
     font-weight: 600;
     width: 20%;
-}
+    min-width: 140px;
+  }
 
-.settings-form input {
-    padding: 15px 15px;
+  input {
+    padding: 15px;
     border: 1px solid #ccc;
     width: 80%;
     border-radius: 6px;
+    min-width: 240px;
+  }
 }
 
 .template-preview-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 1rem;
+    display: flex
+    ;
+        flex-wrap: wrap;
+        /* gap: 1rem; */
+        margin-top: 1rem;
+        width: 80%;
 }
 
 .template-radio {
@@ -65,23 +72,68 @@
   border-radius: 6px;
   cursor: pointer;
   font-size: 1rem;
+  margin-top: 1rem;
 }
 
 .templateupdate {
-    display: flex;
-    
-    label{
-        width: 20%;
+  display: flex;
+  flex-wrap: wrap;
+  label {
+    width: 20%;
+    min-width: 140px;
+  }
+
+  .template-field {
+    width: 80%;
+    min-width: 240px;
+
+    .form-group {
+      width: 100%;
+
+      input {
+        width: 100%;
+      }
     }
+  }
+}
+
+// Responsive Adjustments
+@media (max-width: 768px) {
+  .settings-form,
+  .templateupdate {
+    .form-group {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    label {
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+
+    input {
+      width: 100%;
+    }
+  }
+
+  .templateupdate {
+    flex-direction: column;
+
     .template-field {
-        width: 80%;
-
-        .form-group{
-            width: 100%;
-
-            input{
-                width: 100%;
-            }
-        }
+      width: 100%;
     }
+  }
+
+  .save-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .template-radio {
+    width: 100px;
+  }
+  .settings-card {
+    padding: 1rem;
+   
+}
 }

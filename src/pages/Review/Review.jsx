@@ -247,7 +247,20 @@ const Review = () => {
         <div className="image-modal">
           <div className="modal-content">
             <span className="close-btn" onClick={() => setShowImageModal(false)}>
-              &times;
+            <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
             </span>
             <img src={templateImageUrl} alt="Review Image" />
           </div>
@@ -294,7 +307,22 @@ const Review = () => {
         <div className="image-modal-overlay" onClick={() => setShowImageModal(false)}>
           <div className="image-modal" onClick={(e) => e.stopPropagation()}>
             <img src={templateImageUrl} alt="Default Template" style={{ maxWidth: "100%", height: "auto" }} />
-            <button className="close-btn" onClick={() => setShowImageModal(false)}>×</button>
+            <button className="close-btn" onClick={() => setShowImageModal(false)}>
+            <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+            </button>
             <div className="social-share">
               <div className="platform-icons">
                 {platforms.map((platform) => (
