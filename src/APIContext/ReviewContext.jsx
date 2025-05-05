@@ -1,13 +1,15 @@
 import React, { createContext, useState, useEffect } from "react";
+import { useParams } from "react-router-dom"; // 👈 import useParams
 
 export const ReviewContext = createContext();
 
 export const ReviewProvider = ({ children }) => {
+  const { locationId } = useParams(); // 👈 get locationId from URL
+
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({});
-  const locationId = "17431257306289895747";
 
   const fetchReviews = async () => {
     try {
@@ -17,22 +19,16 @@ export const ReviewProvider = ({ children }) => {
       let access = localStorage.getItem("review_token");
 
       if (!access) {
-        console.log("No token found, fetching a new one...");
         access = await fetchNewToken();
       }
 
       let response = await fetchReviewsWithToken(access);
 
       if (response.status === 401) {
-        console.log("Access token expired. Trying to refresh...");
-
         access = await refreshAccessToken();
-
         if (!access) {
-          console.log("Refresh failed, fetching new token...");
           access = await fetchNewToken();
         }
-
         response = await fetchReviewsWithToken(access);
       }
 
@@ -42,7 +38,6 @@ export const ReviewProvider = ({ children }) => {
       }
 
       const data = await response.json();
-
       const reviewsArray = Array.isArray(data) ? data : data?.data || [];
       const pageInfo =
         data?.pagination ||
@@ -51,7 +46,6 @@ export const ReviewProvider = ({ children }) => {
 
       setReviews(reviewsArray);
       setPagination(pageInfo);
-
     } catch (err) {
       console.error("Fetch error:", err.message);
       setError("Failed to fetch reviews.");
@@ -79,14 +73,12 @@ export const ReviewProvider = ({ children }) => {
 
       if (!res.ok) {
         const errorText = await res.text();
-        console.error("Token fetch error:", errorText);
         throw new Error("Failed to fetch new token");
       }
 
       const data = await res.json();
       localStorage.setItem("review_token", data.access);
       localStorage.setItem("review_refresh_token", data.refresh);
-      console.log("Fetched new token:", data.access);
       return data.access;
     } catch (err) {
       console.error("Error fetching new token:", err.message);
@@ -97,10 +89,7 @@ export const ReviewProvider = ({ children }) => {
   const refreshAccessToken = async () => {
     const refreshToken = localStorage.getItem("review_refresh_token");
 
-    if (!refreshToken) {
-      console.warn("No refresh token available.");
-      return null;
-    }
+    if (!refreshToken) return null;
 
     try {
       const res = await fetch("https://aireview.lawfirmgrowthmachine.com/api/token/refresh/", {
@@ -109,15 +98,10 @@ export const ReviewProvider = ({ children }) => {
         body: JSON.stringify({ refresh: refreshToken }),
       });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Refresh failed:", errorText);
-        return null;
-      }
+      if (!res.ok) return null;
 
       const data = await res.json();
       localStorage.setItem("review_token", data.access);
-      console.log("Refreshed access token:", data.access);
       return data.access;
     } catch (err) {
       console.error("Refresh token error:", err.message);
@@ -126,8 +110,10 @@ export const ReviewProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchReviews();
-  }, []);
+    if (locationId) {
+      fetchReviews();
+    }
+  }, [locationId]);
 
   return (
     <ReviewContext.Provider value={{ reviews, loading, error, pagination, fetchReviews }}>
