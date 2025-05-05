@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { ReviewContext } from "../../APIContext/ReviewContext";
 import { useTemplate } from "../../APIContext/TemplateContext";
 import { useSettings } from "../../APIContext/SettingsContext";
+import { useSocialMedia } from "../../APIContext/SocialMediaContext";
 
 import "./Review.scss";
 import { Calendar } from "primereact/calendar";
@@ -12,14 +13,13 @@ import ReplyIcon from "../../assets/Icons/ShareIcon";
 import LocationModal from "../../components/LocationModal/LocationModal";
 import ReplyModal from "../../components/ReplyModal/ReplyModal";
 
-import { FaFacebookF, FaTwitter, FaGoogle, FaInstagram } from "react-icons/fa";
-import axios from "axios";
+import { FaFacebookF, FaTwitter, FaGoogle, FaInstagram } from 'react-icons/fa';
 
 const socialPlatforms = [
-  { name: "facebook", icon: <FaFacebookF /> },
-  { name: "twitter", icon: <FaTwitter /> },
-  { name: "google", icon: <FaGoogle /> },
-  { name: "instagram", icon: <FaInstagram /> },
+  { name: 'facebook', icon: <FaFacebookF /> },
+  { name: 'twitter', icon: <FaTwitter /> },
+  { name: 'google', icon: <FaGoogle /> },
+  { name: 'instagram', icon: <FaInstagram /> },
 ];
 
 const getNumericRating = (rating) => {
@@ -37,6 +37,7 @@ const formatDate = (s) => {
 
 const Review = () => {
   const { locationId } = useParams();
+  const { postReview } = useSocialMedia();
   const token = localStorage.getItem("review_token");
   const { reviews, loading, error, fetchReviews } = useContext(ReviewContext);
   const { selectedTemplateUrl } = useTemplate();
@@ -50,33 +51,65 @@ const Review = () => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [posting, setPosting] = useState(false); // NEW STATE for posting
+  const [message, setMessage] = useState(''); // NEW STATE for message
   const [postedPlatforms, setPostedPlatforms] = useState({}); // NEW STATE
   const reviewsPerPage = 10;
 
+  const platforms = ['facebook', 'twitter', 'google', 'instagram'];
+
+  const handlePost = async (platform, reviewId) => {
+    console.log('Posting to platform:', platform); // Log platform value to console
+    setPosting(true); // Set posting state to true when posting
+    setMessage(''); // Clear previous message
+  
+    try {
+      // Attempt to post the review
+      await postReview({ value: platform, reviewId, token });
+  
+      // If posting is successful, update the status in postedPlatforms
+      setPostedPlatforms((prev) => ({
+        ...prev,
+        [reviewId]: {
+          ...prev[reviewId],
+          [platform]: true, // Mark this platform as successfully posted
+        },
+      }));
+      setMessage(`Posted successfully on ${platform}`);
+    } catch (error) {
+      // If posting fails, update the status in postedPlatforms as false
+      setPostedPlatforms((prev) => ({
+        ...prev,
+        [reviewId]: {
+          ...prev[reviewId],
+          [platform]: false, // Mark this platform as failed
+        },
+      }));
+      setMessage(`Failed to post on ${platform}`);
+    } finally {
+      setPosting(false); // Reset posting state
+      setShowImageModal(false); // Close the modal after posting
+    }
+  };
+
   useEffect(() => {
     if (locationId && token) {
-      fetchReviews(locationId, token, 1, 1000);
+      fetchReviews(locationId, token, currentPage, reviewsPerPage);
       fetchSettings(locationId, token);
     }
-  }, [locationId, token]);
+  }, [locationId, token, currentPage]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [startDate, endDate]);
-
-  const filteredReviews = (reviews || []).filter((r) => {
+  const filtered = (reviews || []).filter((r) => {
     if (!r.review_added_on) return true;
-    const reviewDate = new Date(r.review_added_on);
-    if (startDate && reviewDate < new Date(startDate)) return false;
-    if (endDate && reviewDate > new Date(endDate)) return false;
+    const d = new Date(r.review_added_on);
+    if (startDate && d < new Date(startDate)) return false;
+    if (endDate && d > new Date(endDate)) return false;
     return true;
   });
 
-  const totalPages = Math.ceil(filteredReviews.length / reviewsPerPage) || 1;
-  const currentReviews = filteredReviews.slice(
-    (currentPage - 1) * reviewsPerPage,
-    currentPage * reviewsPerPage
-  );
+  const totalPages = Math.ceil(filtered.length / reviewsPerPage) || 1;
+  const sliceStart = (currentPage - 1) * reviewsPerPage;
+  const currentReviews = filtered.slice(sliceStart, sliceStart + reviewsPerPage);
 
   const openReply = (id) => {
     setSelectedReviewId(id);
@@ -85,51 +118,36 @@ const Review = () => {
 
   const openImageModal = (review) => {
     if (settings?.default_template) {
+      // Encoding the name and review to safely include them in the URL
       const encodedName = encodeURIComponent(review.reviewer?.displayName || "Anonymous");
       const encodedReview = encodeURIComponent(review.comments || "No comment");
-      const dynamicUrl = `${settings.default_template}?name=${encodedName}&review=${encodedReview}`;
 
-      setSelectedReviewId(review.review_id);
+      // Construct the dynamic image URL
+      const dynamicUrl = `${settings.default_template}?name=${encodedName}&review=${encodedReview}`;
+      
       setTemplateImageUrl(dynamicUrl);
       setShowImageModal(true);
     }
   };
 
-  const handlePostToSocial = async (platform) => {
-    if (!selectedReviewId || !token) {
-      alert("No review selected or token missing.");
-      return;
-    }
-
+  // Function to handle social media sharing
+  const handleSocialShare = async (socialMedia, reviewId) => {
     try {
-      await axios.post(
-        "https://aireview.lawfirmgrowthmachine.com/api/post-review/",
+      const response = await axios.post(
+        `https://aireview.lawfirmgrowthmachine.com/api/post-review/`,
         {
-          value: platform.charAt(0).toUpperCase() + platform.slice(1),
-          reviewId: selectedReviewId,
+          value: socialMedia,
+          reviewId: reviewId
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
-          },
+            Authorization: `Bearer ${token}`
+          }
         }
       );
-
-      setPostedPlatforms((prev) => {
-        const existing = prev[selectedReviewId] || [];
-        if (!existing.includes(platform)) {
-          return {
-            ...prev,
-            [selectedReviewId]: [...existing, platform],
-          };
-        }
-        return prev;
-      });
-
-      alert(`${platform} posted successfully!`);
+      console.log(`${socialMedia} shared successfully:`, response.data);
     } catch (error) {
-      console.error("Error posting to", platform, error);
-      alert(`Failed to post to ${platform}`);
+      console.error("Error sharing on social media:", error);
     }
   };
 
@@ -138,15 +156,32 @@ const Review = () => {
       <div className="review-section">
         <div className="top-section">
           <div className="sort-ftr">
-            <Calendar value={startDate} onChange={(e) => setStartDate(e.value)} placeholder="Start Date" dateFormat="yy-mm-dd" showIcon />
+            <Calendar
+              value={startDate}
+              onChange={(e) => setStartDate(e.value)}
+              placeholder="Start Date"
+              dateFormat="yy-mm-dd"
+              showIcon
+            />
             <span>–</span>
-            <Calendar value={endDate} onChange={(e) => setEndDate(e.value)} placeholder="End Date" dateFormat="yy-mm-dd" showIcon />
+            <Calendar
+              value={endDate}
+              onChange={(e) => setEndDate(e.value)}
+              placeholder="End Date"
+              dateFormat="yy-mm-dd"
+              showIcon
+            />
             <FilterIcon className="filter-icon" />
-            <button className="reset-filters" onClick={() => { setStartDate(null); setEndDate(null); }}>
+            <button
+              className="reset-filters"
+              onClick={() => { setStartDate(null); setEndDate(null); }}
+            >
               Reset Filters
             </button>
           </div>
-          <button className="sync-btn" onClick={() => setShowSyncModal(true)}>Sync Locations</button>
+          <button className="sync-btn" onClick={() => setShowSyncModal(true)}>
+            Sync Locations
+          </button>
         </div>
 
         {loading ? (
@@ -171,22 +206,40 @@ const Review = () => {
                 currentReviews.map((rev) => (
                   <tr key={rev.review_id}>
                     <td>{rev.reviewer?.displayName || "Anonymous"}</td>
-                    <td>{[...Array(getNumericRating(rev.rating))].map((_, i) => <span key={i}>⭐</span>)}</td>
+                    <td>
+                      {[...Array(getNumericRating(rev.rating))].map((_, i) => (
+                        <span key={i}>⭐</span>
+                      ))}
+                    </td>
                     <td>{rev.comments || "No comment"}</td>
                     <td>{formatDate(rev.review_added_on)}</td>
                     <td>{rev.ai_generated_response || ""}</td>
                     <td>
-                      {(postedPlatforms[rev.review_id] || []).map((platform) => {
-                        const icon = socialPlatforms.find((p) => p.name === platform)?.icon;
-                        return <span key={platform} style={{ marginRight: "5px" }}>{icon}</span>;
-                      })}
+                    {(postedPlatforms[rev.review_id] && Object.keys(postedPlatforms[rev.review_id]).length > 0) ? (
+                        Object.keys(postedPlatforms[rev.review_id]).map((platform) => {
+                          const platformIcon = socialPlatforms.find((p) => p.name === platform)?.icon;
+                          return platformIcon ? (
+                            <span key={platform} style={{ marginRight: "5px" }}>
+                              {platformIcon}
+                            </span>
+                          ) : null;
+                        })
+                      ) : (
+                        <span></span>
+                      )}
                     </td>
                     <td>
                       <div className="action-btn">
-                        <span onClick={() => openImageModal(rev)} style={{ cursor: "pointer" }}>
+                        <span
+                          onClick={() => openImageModal(rev)} // Pass review data here
+                          style={{ cursor: "pointer" }}
+                        >
                           <ClipboardIcon />
                         </span>
-                        <span onClick={() => openReply(rev.review_id)} style={{ cursor: "pointer", marginLeft: 8 }}>
+                        <span
+                          onClick={() => openReply(rev.review_id)}
+                          style={{ cursor: "pointer", marginLeft: 8 }}
+                        >
                           <ReplyIcon />
                         </span>
                       </div>
@@ -194,7 +247,11 @@ const Review = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan="7" style={{ textAlign: "center" }}>No reviews available</td></tr>
+                <tr>
+                  <td colSpan="7" style={{ textAlign: "center" }}>
+                    No reviews available
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
@@ -202,11 +259,22 @@ const Review = () => {
       </div>
 
       <div className="pagination">
-        <div className="pagination-left"><span>Page {currentPage} of {totalPages}</span></div>
+        <div className="pagination-left">
+          <span>Page {currentPage} of {totalPages}</span>
+        </div>
         <div className="pagination-right">
-          <button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1}>◀</button>
-          <button onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages}>▶</button>
-          <select value={currentPage} onChange={(e) => setCurrentPage(Number(e.target.value))}>
+          <button
+            onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+            disabled={currentPage === 1}
+          >◀</button>
+          <button
+            onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >▶</button>
+          <select
+            value={currentPage}
+            onChange={e => setCurrentPage(Number(e.target.value))}
+          >
             {[...Array(totalPages)].map((_, i) => (
               <option key={i + 1} value={i + 1}>Page {i + 1}</option>
             ))}
@@ -217,7 +285,11 @@ const Review = () => {
       <LocationModal isOpen={showSyncModal} onClose={() => setShowSyncModal(false)} />
 
       {showReplyModal && (
-        <ReplyModal reviewId={selectedReviewId} token={token} onClose={() => setShowReplyModal(false)} />
+        <ReplyModal
+          reviewId={selectedReviewId}
+          token={token}
+          onClose={() => setShowReplyModal(false)}
+        />
       )}
 
       {showImageModal && (
@@ -225,12 +297,17 @@ const Review = () => {
           <div className="image-modal" onClick={(e) => e.stopPropagation()}>
             <img src={templateImageUrl} alt="Default Template" style={{ maxWidth: "100%", height: "auto" }} />
             <button className="close-btn" onClick={() => setShowImageModal(false)}>×</button>
-            <div className="social-icons">
-              {socialPlatforms.map(({ name, icon }) => (
-                <button key={name} className="social-btn" onClick={() => handlePostToSocial(name)}>
-                  {icon}
-                </button>
-              ))}
+            <div className="social-share">
+              <div className="platform-icons">
+                {platforms.map((platform) => (
+                  <button key={platform} onClick={() => handlePost(platform, selectedReviewId)}>
+                    {platform === "facebook" && <FaFacebookF />}
+                    {platform === "twitter" && <FaTwitter />}
+                    {platform === "google" && <FaGoogle />}
+                    {platform === "instagram" && <FaInstagram />}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

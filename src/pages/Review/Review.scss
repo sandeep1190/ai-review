@@ -434,22 +434,10 @@ button.reset-filters {
   }
 }
 
-.social-icons {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 10px;
-}
-
-.social-btn {
-  font-size: 20px;
+.platform-icons button {
   background: none;
   border: none;
+  padding: 13px 10px;
+  font-size: 21px;
   cursor: pointer;
-  color: #555;
 }
-
-.social-btn:hover {
-  color: #000;
-}
-

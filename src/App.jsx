@@ -9,6 +9,7 @@ import { AuthProvider } from '../src/APIContext/AuthContext';
 import { LocationProvider } from './APIContext/LocationContext';
 import { TemplateProvider } from './APIContext/TemplateContext';
 import { SettingsProvider } from './APIContext/SettingsContext';
+import { SocialMediaProvider } from './APIContext/SocialMediaContext';
 
 import { useParams } from 'react-router-dom';
 
@@ -18,6 +19,7 @@ const App = () => {
 
   return (
     <AuthProvider>
+      <SocialMediaProvider>
       <SettingsProvider>
         <TemplateProvider> {/* Wrap the app with TemplateProvider */}
           <ReviewProvider locationId={locationId}>
@@ -28,6 +30,7 @@ const App = () => {
           </ReviewProvider>
         </TemplateProvider>
       </SettingsProvider>
+      </SocialMediaProvider>
     </AuthProvider>
   );
 };
