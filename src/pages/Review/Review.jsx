@@ -51,9 +51,9 @@ const Review = () => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [posting, setPosting] = useState(false); // NEW STATE for posting
-  const [message, setMessage] = useState(''); // NEW STATE for message
-  const [postedPlatforms, setPostedPlatforms] = useState({}); // NEW STATE
+  const [posting, setPosting] = useState(false);
+  const [message, setMessage] = useState(''); 
+  const [postedPlatforms, setPostedPlatforms] = useState({});
   const reviewsPerPage = 10;
 
   const platforms = ['facebook', 'twitter', 'google', 'instagram'];
@@ -61,19 +61,17 @@ const Review = () => {
   const handlePost = async (platform, reviewId) => {
     console.log('Posting to platform:', platform);
     console.log('Review ID:', reviewId);
-    console.log('Token:', token); // Caution: avoid logging tokens in production
+    console.log('Token:', token);
     setPosting(true);
     setMessage('');
   
     try {
-      // Log the exact payload being sent to backend
       console.log('Sending payload to backend:', {
         value: platform,
         reviewId,
         token,
       });
   
-      // Attempt to post the review
       await postToSocialMedia(token, reviewId, platform);
   
       setPostedPlatforms((prev) => ({
@@ -218,7 +216,7 @@ const Review = () => {
                     <td>
                       <div className="action-btn">
                         <span
-                          onClick={() => openImageModal(rev)} // Pass review data here
+                          onClick={() => openImageModal(rev)}
                           style={{ cursor: "pointer" }}
                         >
                           <ClipboardIcon />

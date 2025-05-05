@@ -8,7 +8,6 @@ import CallbackHandler from '../pages/Authentication/CallbackHandler';
 import Settings from '../pages/Setting/Settings';
 import { ReviewProvider } from "../APIContext/ReviewContext";
 
-// Wrapper to extract `locationId` from URL and provide it via context
 const ReviewProviderWrapper = ({ children }) => {
   const { locationId } = useParams();
   return (

@@ -3,33 +3,33 @@ import './styles/global.scss';
 import Routing from "./Routes/Route";
 import "primereact/resources/themes/lara-light-cyan/theme.css";
 import "./App.css";
+
 import Header from './components/Header';
-import { ReviewProvider } from "../src/APIContext/ReviewContext";
-import { AuthProvider } from '../src/APIContext/AuthContext';
+
+import { ReviewProvider } from "./APIContext/ReviewContext";
+import { AuthProvider } from './APIContext/AuthContext';
 import { LocationProvider } from './APIContext/LocationContext';
 import { TemplateProvider } from './APIContext/TemplateContext';
 import { SettingsProvider } from './APIContext/SettingsContext';
 import { SocialMediaProvider } from './APIContext/SocialMediaContext';
-
-import { useParams } from 'react-router-dom';
+import { TokenProvider } from './APIContext/TokenContext';
 
 const App = () => {
-
-  const { locationId } = useParams();
-
   return (
     <AuthProvider>
       <SocialMediaProvider>
-      <SettingsProvider>
-        <TemplateProvider> {/* Wrap the app with TemplateProvider */}
-          <ReviewProvider locationId={locationId}>
-            <LocationProvider>
-              <Header />
-              <Routing />
-            </LocationProvider>
-          </ReviewProvider>
-        </TemplateProvider>
-      </SettingsProvider>
+        <SettingsProvider>
+          <TemplateProvider>
+            <TokenProvider>
+              <ReviewProvider>
+                <LocationProvider>
+                  <Header />
+                  <Routing />
+                </LocationProvider>
+              </ReviewProvider>
+            </TokenProvider>
+          </TemplateProvider>
+        </SettingsProvider>
       </SocialMediaProvider>
     </AuthProvider>
   );

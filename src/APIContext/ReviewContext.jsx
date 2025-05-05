@@ -1,10 +1,12 @@
 import React, { createContext, useState, useEffect } from "react";
-import { useParams } from "react-router-dom"; // 👈 import useParams
+import { useToken } from "./TokenContext"; // ✅ import token context
 
 export const ReviewContext = createContext();
 
 export const ReviewProvider = ({ children }) => {
-  const { locationId } = useParams(); // 👈 get locationId from URL
+  const { getAccessToken, fetchNewToken, refreshAccessToken } = useToken();
+
+  const locationId = "17431257306289895747"; // ✅ for reviews
 
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -16,11 +18,7 @@ export const ReviewProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      let access = localStorage.getItem("review_token");
-
-      if (!access) {
-        access = await fetchNewToken();
-      }
+      let access = await getAccessToken();
 
       let response = await fetchReviewsWithToken(access);
 
@@ -63,57 +61,9 @@ export const ReviewProvider = ({ children }) => {
     });
   };
 
-  const fetchNewToken = async () => {
-    try {
-      const res = await fetch("https://aireview.lawfirmgrowthmachine.com/api/token/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ locationId }),
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error("Failed to fetch new token");
-      }
-
-      const data = await res.json();
-      localStorage.setItem("review_token", data.access);
-      localStorage.setItem("review_refresh_token", data.refresh);
-      return data.access;
-    } catch (err) {
-      console.error("Error fetching new token:", err.message);
-      throw err;
-    }
-  };
-
-  const refreshAccessToken = async () => {
-    const refreshToken = localStorage.getItem("review_refresh_token");
-
-    if (!refreshToken) return null;
-
-    try {
-      const res = await fetch("https://aireview.lawfirmgrowthmachine.com/api/token/refresh/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh: refreshToken }),
-      });
-
-      if (!res.ok) return null;
-
-      const data = await res.json();
-      localStorage.setItem("review_token", data.access);
-      return data.access;
-    } catch (err) {
-      console.error("Refresh token error:", err.message);
-      return null;
-    }
-  };
-
   useEffect(() => {
-    if (locationId) {
-      fetchReviews();
-    }
-  }, [locationId]);
+    fetchReviews();
+  }, []);
 
   return (
     <ReviewContext.Provider value={{ reviews, loading, error, pagination, fetchReviews }}>
