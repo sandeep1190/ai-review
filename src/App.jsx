@@ -5,7 +5,7 @@ import "primereact/resources/themes/lara-light-cyan/theme.css";
 import "./App.css";
 
 import Header from './components/Header';
-
+import { OAuthProvider } from './APIContext/OAuthContext';
 import { ReviewProvider } from "./APIContext/ReviewContext";
 import { AuthProvider } from './APIContext/AuthContext';
 import { LocationProvider } from './APIContext/LocationContext';
@@ -16,6 +16,7 @@ import { TokenProvider } from './APIContext/TokenContext';
 
 const App = () => {
   return (
+    <OAuthProvider>
     <AuthProvider>
       <SocialMediaProvider>
         <SettingsProvider>
@@ -32,6 +33,7 @@ const App = () => {
         </SettingsProvider>
       </SocialMediaProvider>
     </AuthProvider>
+    </OAuthProvider>
   );
 };
 
