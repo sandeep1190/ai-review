@@ -3,9 +3,8 @@ import "./Location.scss";
 import { FaSearch, FaFilter, FaSyncAlt, FaCog, FaRegEnvelope } from "react-icons/fa";
 import LocationModal from "../../components/LocationModal/LocationModal";
 import axios from "axios";
+import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
-
-const locationId = "0OKk2AUg2zJwKTYNwnmf";
 
 const Location = () => {
   const [showModal, setShowModal] = useState(false);
@@ -15,17 +14,32 @@ const Location = () => {
   const [locations, setLocations] = useState([]);
   const [token, setToken] = useState("");
 
+  const location = useLocation();
+
+  const rawLocationId = localStorage.getItem("locationId");
+  const locationId = rawLocationId?.startsWith("-") ? rawLocationId.slice(1) : rawLocationId;
+
   const fetchTokenAndData = async () => {
+    if (!locationId) {
+      console.error("No locationId found in localStorage.");
+      return;
+    }
+
     try {
-      const tokenResponse = await axios.post("https://aireview.lawfirmgrowthmachine.com/api/token/", {
-        locationId,
-      });
+      const tokenResponse = await axios.post(
+        "https://aireview.lawfirmgrowthmachine.com/api/token/",
+        { locationId }
+      );
+
       const accessToken = tokenResponse.data.access;
       setToken(accessToken);
 
-      const dataResponse = await axios.get("https://aireview.lawfirmgrowthmachine.com/api/locations/", {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      const dataResponse = await axios.get(
+        "https://aireview.lawfirmgrowthmachine.com/api/locations/",
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
 
       setLocations(dataResponse.data);
     } catch (error) {
@@ -34,10 +48,16 @@ const Location = () => {
   };
 
   useEffect(() => {
-    fetchTokenAndData();
-  }, []);
+    const params = new URLSearchParams(location.search);
+    const tokenFromUrl = params.get("token");
+    if (tokenFromUrl) {
+      setToken(tokenFromUrl);
+    }
 
-  const filteredData = locations.filter(item =>
+    fetchTokenAndData();
+  }, [location]);
+
+  const filteredData = locations.filter((item) =>
     item.name?.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -62,7 +82,9 @@ const Location = () => {
                 setCurrentPage(1);
               }}
             />
-            <button className="filter-btn"><FaFilter /></button>
+            <button className="filter-btn">
+              <FaFilter />
+            </button>
           </div>
           <button onClick={() => setShowModal(true)} className="sync-btn">
             <FaSyncAlt /> Sync Locations
@@ -73,7 +95,9 @@ const Location = () => {
           <table>
             <thead>
               <tr>
-                <th><input type="checkbox" /></th>
+                <th>
+                  <input type="checkbox" />
+                </th>
                 <th>#</th>
                 <th>Location Name</th>
                 <th>Primary Phone</th>
@@ -83,9 +107,10 @@ const Location = () => {
             </thead>
             <tbody>
               {paginatedData.map((item, index) => (
-                console.log("Location item:", item),
                 <tr key={item.id}>
-                  <td><input type="checkbox" /></td>
+                  <td>
+                    <input type="checkbox" />
+                  </td>
                   <td>{indexOfFirstReview + index + 1}</td>
                   <td>{item.name || "—"}</td>
                   <td>{item.phone_numbers?.primaryPhone || "—"}</td>
@@ -135,7 +160,9 @@ const Location = () => {
           >
             ◀
           </button>
-          <span>{currentPage} / {totalPages}</span>
+          <span>
+            {currentPage} / {totalPages}
+          </span>
           <button
             onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
