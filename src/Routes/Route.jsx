@@ -8,6 +8,7 @@ import CallbackHandler from '../pages/Authentication/CallbackHandler';
 import Settings from '../pages/Setting/Settings';
 import { ReviewProvider } from "../APIContext/ReviewContext";
 
+// Wrap Review with locationId context
 const ReviewProviderWrapper = ({ children }) => {
   const { locationId } = useParams();
   return (
@@ -36,7 +37,11 @@ const Routing = () => {
           }
         />
 
+        <Route path="/location/:locationId" element={<Location />} />
+
         <Route path="/callback" element={<CallbackHandler />} />
+
+        {/* Fallback to default location view */}
         <Route path="/" element={<Location />} />
       </Route>
     </Routes>

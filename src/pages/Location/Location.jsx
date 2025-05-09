@@ -3,8 +3,7 @@ import "./Location.scss";
 import { FaSearch, FaFilter, FaSyncAlt, FaCog, FaRegEnvelope } from "react-icons/fa";
 import LocationModal from "../../components/LocationModal/LocationModal";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 
 const Location = () => {
   const [showModal, setShowModal] = useState(false);
@@ -15,13 +14,14 @@ const Location = () => {
   const [token, setToken] = useState("");
 
   const location = useLocation();
+  const navigate = useNavigate();
 
-  const rawLocationId = localStorage.getItem("locationId");
-  const locationId = rawLocationId?.startsWith("-") ? rawLocationId.slice(1) : rawLocationId;
+  const queryParams = new URLSearchParams(location.search);
+  const locationId = queryParams.get("location");
 
   const fetchTokenAndData = async () => {
     if (!locationId) {
-      console.error("No locationId found in localStorage.");
+      console.error("No locationId found in URL.");
       return;
     }
 
@@ -44,16 +44,12 @@ const Location = () => {
       setLocations(dataResponse.data);
     } catch (error) {
       console.error("Error fetching location data:", error);
+      // If unauthorized or locationId is invalid, redirect to main dashboard or fallback
+      navigate("/");
     }
   };
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const tokenFromUrl = params.get("token");
-    if (tokenFromUrl) {
-      setToken(tokenFromUrl);
-    }
-
     fetchTokenAndData();
   }, [location]);
 
@@ -95,9 +91,7 @@ const Location = () => {
           <table>
             <thead>
               <tr>
-                <th>
-                  <input type="checkbox" />
-                </th>
+                <th><input type="checkbox" /></th>
                 <th>#</th>
                 <th>Location Name</th>
                 <th>Primary Phone</th>
@@ -108,9 +102,7 @@ const Location = () => {
             <tbody>
               {paginatedData.map((item, index) => (
                 <tr key={item.id}>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
+                  <td><input type="checkbox" /></td>
                   <td>{indexOfFirstReview + index + 1}</td>
                   <td>{item.name || "—"}</td>
                   <td>{item.phone_numbers?.primaryPhone || "—"}</td>
@@ -160,9 +152,7 @@ const Location = () => {
           >
             ◀
           </button>
-          <span>
-            {currentPage} / {totalPages}
-          </span>
+          <span>{currentPage} / {totalPages}</span>
           <button
             onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
