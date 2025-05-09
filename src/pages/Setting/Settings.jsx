@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useTemplate } from '../../APIContext/TemplateContext';
 import { useSettings } from '../../APIContext/SettingsContext';
 import './Settings.scss';
+import Header from '../../components/Layout/Header';
 
 const Settings = () => {
   const { locationId } = useParams();
@@ -68,6 +69,7 @@ const Settings = () => {
 
   return (
     <div className="settings-page">
+       <Header /> 
       <div className="settings-card">
         <h2>Location Settings</h2>
         <form onSubmit={handleSubmit} className="settings-form">

@@ -19,37 +19,36 @@ const Location = () => {
   const queryParams = new URLSearchParams(location.search);
   const locationId = queryParams.get("location");
 
-  const fetchTokenAndData = async () => {
+  useEffect(() => {
     if (!locationId) {
-      console.error("No locationId found in URL.");
+      navigate("/sign-in");
       return;
     }
 
-    try {
-      const tokenResponse = await axios.post(
-        "https://aireview.lawfirmgrowthmachine.com/api/token/",
-        { locationId }
-      );
+    const fetchTokenAndData = async () => {
+      try {
+        const tokenResponse = await axios.post(
+          "https://aireview.lawfirmgrowthmachine.com/api/token/",
+          { locationId }
+        );
 
-      const accessToken = tokenResponse.data.access;
-      setToken(accessToken);
+        const accessToken = tokenResponse.data.access;
+        setToken(accessToken);
 
-      const dataResponse = await axios.get(
-        "https://aireview.lawfirmgrowthmachine.com/api/locations/",
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
+        const dataResponse = await axios.get(
+          "https://aireview.lawfirmgrowthmachine.com/api/locations/",
+          {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        );
 
-      setLocations(dataResponse.data);
-    } catch (error) {
-      console.error("Error fetching location data:", error);
-      // If unauthorized or locationId is invalid, redirect to main dashboard or fallback
-      navigate("/");
-    }
-  };
+        setLocations(dataResponse.data);
+      } catch (error) {
+        console.error("Error fetching location data:", error);
+        navigate("/sign-in");
+      }
+    };
 
-  useEffect(() => {
     fetchTokenAndData();
   }, [location]);
 
@@ -152,7 +151,9 @@ const Location = () => {
           >
             ◀
           </button>
-          <span>{currentPage} / {totalPages}</span>
+          <span>
+            {currentPage} / {totalPages}
+          </span>
           <button
             onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
@@ -166,7 +167,7 @@ const Location = () => {
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         token={token}
-        reloadLocations={fetchTokenAndData}
+        reloadLocations={() => fetchTokenAndData()}
       />
     </div>
   );
